@@ -65,6 +65,7 @@ function stat_FavWeapon()
 		stat_UpdatePData("stat_Weapon_" .. weaponName)
 	end
 end
+
 -- makes an entry to store items bought by player
 function ItemBought(equip)
 	local equip = tostring(equip)
@@ -87,13 +88,13 @@ function ItemBought(equip)
 			end
 		end
 		-- Make Custom names for the Radar, Disguiser and Bodyarmor, because otherwise nobody knows what "1" etc means
-		if equip == "1" and (GetConVar("stat_Record"):GetBool()) then
+		if equip == "1" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Body Armor\n")
-		elseif equip == "2" and (GetConVar("stat_Record"):GetBool()) then
+		elseif equip == "2" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Radar\n")
-		elseif equip == "4" and (GetConVar("stat_Record"):GetBool()) then
+		elseif equip == "4" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Disguiser\n")
-		elseif GetConVar("stat_Record"):GetBool() == true then
+		elseif (GetConVar("stat_Record"):GetBool()) and (roundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. RealName .. "\n")
 		end
 end
@@ -151,7 +152,7 @@ net.Receive("stat_Hurt", function()
 			if damage > max then
 				damage = max -- Set the max damage defined by ConVar
 			end
-			if GetConVar("stat_Record"):GetBool() == true then
+			if GetConVar("stat_Record"):GetBool() and (roundActive) then
 				LocalPlayer():SetPData("stat_TotalDamageDealt", LocalPlayer():GetPData("stat_TotalDamageDealt", 0) + damage)
 			end
 		end)
@@ -168,7 +169,7 @@ net.Receive("stat_GotHurt", function()
 			if damage > max then
 				damage = max -- Set the max damage defined by ConVar
 			end
-			if GetConVar("stat_Record"):GetBool() == true then
+			if GetConVar("stat_Record"):GetBool() and (roundActive) then
 				LocalPlayer():SetPData("stat_TotalDamageReceived", LocalPlayer():GetPData("stat_TotalDamageReceived", 0) + damage)
 			end
 		end)
