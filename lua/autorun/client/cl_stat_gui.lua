@@ -40,20 +40,13 @@ local ID
 local ID_list = {}
 local ClearNames = {}
 
---Make custom fonts that scale with the Display
-surface.CreateFont("stat_HudHint", {
-  font = "HudHintTextLarge",
-	extended = false,
-	size = ScrH() * 0.01296296296,
-	weight = 10000,
-  blursize = 0})
 surface.CreateFont("stat_Default", {
   font = "Default",
-	extended = false,
-	size = ScrH() * 0.01203703703,
+  extended = false,
+  size = (ScreenScale(4.4)),
   weight = 400,
-  blursize = 0})
-
+  blursize = 0
+})
 -- This function sets up a table to save the Names from stat_NameDataBase in a list
 local function GetID_NamesfromDB()
   ID_list = {}
@@ -192,7 +185,7 @@ local function stat_SettingWindow()
   local frame = vgui.Create("DFrame")
   frame:SetPos( 0.32760416666667 * ScrW(), 0.35185185185185 * ScrH() )
   frame:SetSize( 0.22760416666667 * ScrW(), 0.21666666666667 * ScrH() )
-  frame:SetTitle("Settings")
+  frame:SetTitle("Settings - Version 1.0.1")
   frame:MakePopup()
 
 
@@ -215,12 +208,14 @@ local function stat_SettingWindow()
   local e = vgui.Create( "DLabel", frame )
   e:SetPos( 0.034324942791762 * frame:GetWide(), 0.33333333333333 * frame:GetTall() )
   e:SetSize( 0.93363844393593 * frame:GetWide(), 0.085470085470085 * frame:GetTall() )
+  e:SetFont("stat_Default")
   e:SetText("Set the maximum damage added to your stats per received/dealt damage:")
 
   local e = vgui.Create( "DButton", frame )
   e:SetPos( 0.2745995423341 * frame:GetWide(), 0.83333333333333 * frame:GetTall() )
   e:SetSize( 0.45766590389016 * frame:GetWide(), 0.094017094017094 * frame:GetTall() )
   e:SetText("Close Window")
+  e:SetFont("stat_Default")
   e.DoClick = function() frame:Remove() end
 
   local e = vgui.Create( "DTextEntry", frame )
@@ -241,6 +236,7 @@ local function stat_SettingWindow()
   e:SetPos( 0.034324942791762 * frame:GetWide(), 0.63675213675214 * frame:GetTall() )
   e:SetSize( 0.66819221967963 * frame:GetWide(), 0.12820512820513 * frame:GetTall() )
   e:SetText("Type in \"DELETE\" and hit Enter to delete all entries:")
+  e:SetFont("stat_Default")
 end
 
 local function ChangePart1()
@@ -383,35 +379,48 @@ function stat_DrawGui()
   stat_gui_frame.Paint = function()
     draw.RoundedBox( 7, 0, 0, stat_gui_frame:GetWide(), stat_gui_frame:GetTall(), Color( 117, 115, 116, 248) )
   end
+  --Make custom font that scales with the Display
+  local FrameHeight = stat_gui_frame:GetTall()
+  surface.CreateFont("stat_HudHint", {
+    font = "HudHintTextLarge",
+    extended = false,
+    size = (FrameHeight * 0.02992592592),
+    weight = 10000,
+    blursize = 0})
 
            stat_gui_Button1 = vgui.Create( "DButton", stat_gui_frame )
            stat_gui_Button1:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
            stat_gui_Button1:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
            stat_gui_Button1:SetText("Show Player-Kills/Deaths")
+           stat_gui_Button1:SetFont("stat_Default")
            stat_gui_Button1.DoClick = ChangePart1
 
            stat_gui_Button2 = vgui.Create( "DButton", stat_gui_frame )
            stat_gui_Button2:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.3 * stat_gui_frame:GetTall() )
            stat_gui_Button2:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
            stat_gui_Button2:SetText("Your Game-stats")
+           stat_gui_Button2:SetFont("stat_Default")
            stat_gui_Button2.DoClick = ChangePart2
 
            stat_gui_Button3 = vgui.Create( "DButton", stat_gui_frame )
            stat_gui_Button3:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.53333333333333 * stat_gui_frame:GetTall() )
            stat_gui_Button3:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
            stat_gui_Button3:SetText("TTT General-stats")
+           stat_gui_Button3:SetFont("stat_Default")
            stat_gui_Button3.DoClick = ChangePart3
 
            stat_gui_Button4 = vgui.Create( "DButton", stat_gui_frame )
            stat_gui_Button4:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
            stat_gui_Button4:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
            stat_gui_Button4:SetText("TTT Item-stats")
+           stat_gui_Button4:SetFont("stat_Default")
            stat_gui_Button4.DoClick = ChangePart4
 
            stat_gui_ButtonS = vgui.Create( "DButton", stat_gui_frame )
            stat_gui_ButtonS:SetPos( 0.4 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
            stat_gui_ButtonS:SetSize( 0.2 * stat_gui_frame:GetWide(), 0.1 * stat_gui_frame:GetTall() )
            stat_gui_ButtonS:SetText("Settings")
+           stat_gui_ButtonS:SetFont("stat_Default")
            stat_gui_ButtonS.DoClick = stat_SettingWindow
 
            stat_gui_List1 = vgui.Create( "DListView", stat_gui_frame )
