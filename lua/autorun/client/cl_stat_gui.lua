@@ -379,6 +379,21 @@ function stat_DrawGui()
   stat_gui_frame.Paint = function()
     draw.RoundedBox( 7, 0, 0, stat_gui_frame:GetWide(), stat_gui_frame:GetTall(), Color( 117, 115, 116, 248) )
   end
+
+  --Get the amount of Addons to display
+  --local totalAddons = LocalPlayer():GetPData("stat_totalAddons","")
+  local totalAddons = {}
+  totalAddons["Show Player-Kills/Deaths"] = ChangePart1
+  totalAddons["TTT General-stats"] = ChangePart2
+  totalAddons["Your Game-stats"] = ChangePart3
+  totalAddons["TTT Item-stats"] = ChangePart4
+  local totalAddonsString = ""
+  for k, v in pairs(table.GetKeys(totalAddons)) do
+    totalAddonsString = totalAddonsString .. v .. "\n"
+  end
+
+  local totalAddonsSplit = string.Split(totalAddonsString, "\n")
+
   --Make custom font that scales with the Display
   local FrameHeight = stat_gui_frame:GetTall()
   surface.CreateFont("stat_HudHint", {
@@ -388,94 +403,101 @@ function stat_DrawGui()
     weight = 10000,
     blursize = 0})
 
-           stat_gui_Button1 = vgui.Create( "DButton", stat_gui_frame )
-           stat_gui_Button1:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_Button1:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
-           stat_gui_Button1:SetText("Show Player-Kills/Deaths")
-           stat_gui_Button1:SetFont("stat_Default")
-           stat_gui_Button1.DoClick = ChangePart1
+  --make a panel for unlimited Buttons
+  stat_gui_ScrollPanel = vgui.Create("DScrollPanel", stat_gui_frame)
+  stat_gui_ScrollPanel:SetPos(0.014583333333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall())
+  stat_gui_ScrollPanel:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.9014814814 * stat_gui_frame:GetTall())
+  --Paint the ScrollBar of the Panel
+  local ScrollBar = stat_gui_ScrollPanel:GetVBar()
+  function ScrollBar:Paint(w, h)
+	   draw.RoundedBox(0, 0, 0, 0, 0, Color(0, 0, 0))
+  end
+  function ScrollBar.btnUp:Paint(w, h)
+	   draw.RoundedBox(0, 0, 0, 4, h, Color(169, 167, 168))
+  end
+  function ScrollBar.btnDown:Paint(w, h)
+	   draw.RoundedBox(0, 0, 0, 4, h, Color(169, 167, 168))
+  end
+  function ScrollBar.btnGrip:Paint(w, h)
+	   draw.RoundedBox(0, 0, 0, 4, h, Color(169, 167, 168))
+  end
+  --Create Buttons
+  for k , v in pairs(totalAddonsSplit) do
+    if v ~= "" then
+      local stat_Button = vgui.Create("DButton", stat_gui_ScrollPanel)
+      stat_Button:SetText(v)
+      stat_Button:SetSize(stat_gui_ScrollPanel:GetWide(), (stat_gui_ScrollPanel:GetTall() - 30) / (#totalAddonsSplit - 1))
+      function stat_Button:Paint(w ,h )
+        draw.RoundedBox(5, 0, 0, w, h, Color(253, 251, 252))
+      end
+      stat_Button:SetFont("stat_Default")
+      stat_Button:Dock(TOP)
+      stat_Button:DockMargin(0,0,0,10)
+      stat_Button.DoClick = totalAddons[v]
+      stat_gui_ScrollPanel:AddItem(stat_Button)
+    end
+  end
 
-           stat_gui_Button2 = vgui.Create( "DButton", stat_gui_frame )
-           stat_gui_Button2:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.3 * stat_gui_frame:GetTall() )
-           stat_gui_Button2:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
-           stat_gui_Button2:SetText("Your Game-stats")
-           stat_gui_Button2:SetFont("stat_Default")
-           stat_gui_Button2.DoClick = ChangePart2
+  stat_gui_ButtonS = vgui.Create( "DButton", stat_gui_frame )
+            stat_gui_ButtonS:SetPos( 0.4 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
+            stat_gui_ButtonS:SetSize( 0.2 * stat_gui_frame:GetWide(), 0.1 * stat_gui_frame:GetTall() )
+            stat_gui_ButtonS:SetText("Settings")
+            stat_gui_ButtonS:SetFont("stat_Default")
+            stat_gui_ButtonS.DoClick = stat_SettingWindow
 
-           stat_gui_Button3 = vgui.Create( "DButton", stat_gui_frame )
-           stat_gui_Button3:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.53333333333333 * stat_gui_frame:GetTall() )
-           stat_gui_Button3:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
-           stat_gui_Button3:SetText("TTT General-stats")
-           stat_gui_Button3:SetFont("stat_Default")
-           stat_gui_Button3.DoClick = ChangePart3
+            stat_gui_List1 = vgui.Create( "DListView", stat_gui_frame )
+            stat_gui_List1:SetVisible(false)
+            stat_gui_List1:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_List1:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_List1:AddColumn("Name")
+            stat_gui_List1:AddColumn("Kills")
+            stat_gui_List1:AddColumn("Deaths By")
 
-           stat_gui_Button4 = vgui.Create( "DButton", stat_gui_frame )
-           stat_gui_Button4:SetPos( 0.014583333333333 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
-           stat_gui_Button4:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.17962962962963 * stat_gui_frame:GetTall() )
-           stat_gui_Button4:SetText("TTT Item-stats")
-           stat_gui_Button4:SetFont("stat_Default")
-           stat_gui_Button4.DoClick = ChangePart4
+            stat_gui_List3 = vgui.Create("DListView", stat_gui_frame)
+            stat_gui_List3:SetVisible(false)
+            stat_gui_List3:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_List3:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.47777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_List3:AddColumn("Rolename")
+            stat_gui_List3:AddColumn("Frequency")
 
-           stat_gui_ButtonS = vgui.Create( "DButton", stat_gui_frame )
-           stat_gui_ButtonS:SetPos( 0.4 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
-           stat_gui_ButtonS:SetSize( 0.2 * stat_gui_frame:GetWide(), 0.1 * stat_gui_frame:GetTall() )
-           stat_gui_ButtonS:SetText("Settings")
-           stat_gui_ButtonS:SetFont("stat_Default")
-           stat_gui_ButtonS.DoClick = stat_SettingWindow
+            stat_gui_List4 = vgui.Create( "DListView", stat_gui_frame )
+            stat_gui_List4:SetVisible(false)
+            stat_gui_List4:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_List4:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_List4:AddColumn("Name of the item")
+            stat_gui_List4:AddColumn("Times bought")
+            stat_gui_List4.OnRowRightClick = function(notused, self)
+              RunWindow(notused ,self)
+            end
 
-           stat_gui_List1 = vgui.Create( "DListView", stat_gui_frame )
-           stat_gui_List1:SetVisible(false)
-           stat_gui_List1:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_List1:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_List1:AddColumn("Name")
-           stat_gui_List1:AddColumn("Kills")
-           stat_gui_List1:AddColumn("Deaths By")
+            stat_gui_Label1 = vgui.Create( "DLabel", stat_gui_frame )
+            stat_gui_Label1:SetPos( 0.825 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_Label1:SetSize( 0.16 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_Label1:SetColor(Color(255,255,255))
+            stat_gui_Label1:SetTextColor(Color(255,255,255))
+            stat_gui_Label1:SetFont("stat_Default")
+            stat_gui_Label1:SetText("")
 
-           stat_gui_List3 = vgui.Create("DListView", stat_gui_frame)
-           stat_gui_List3:SetVisible(false)
-           stat_gui_List3:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_List3:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.47777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_List3:AddColumn("Rolename")
-           stat_gui_List3:AddColumn("Frequency")
+            stat_gui_Label2 = vgui.Create("DLabel", stat_gui_frame)
+            stat_gui_Label2:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_Label2:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_Label2:SetFont("stat_HudHint")
+            stat_gui_Label2:SetTextColor(Color(255,255,255))
+            stat_gui_Label2:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
 
-           stat_gui_List4 = vgui.Create( "DListView", stat_gui_frame )
-           stat_gui_List4:SetVisible(false)
-           stat_gui_List4:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_List4:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_List4:AddColumn("Name of the item")
-           stat_gui_List4:AddColumn("Times bought")
-           stat_gui_List4.OnRowRightClick = function(notused, self)
-             RunWindow(notused ,self)
-           end
+            stat_gui_Label3 = vgui.Create("DLabel",stat_gui_frame )
+            stat_gui_Label3:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
+            stat_gui_Label3:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
+            stat_gui_Label3:SetVisible(false)
+            stat_gui_Label3:SetTextColor(Color(255,255,255))
+            stat_gui_Label3:SetFont("stat_HudHint")
 
-           stat_gui_Label1 = vgui.Create( "DLabel", stat_gui_frame )
-           stat_gui_Label1:SetPos( 0.825 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_Label1:SetSize( 0.16 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_Label1:SetColor(Color(255,255,255))
-           stat_gui_Label1:SetTextColor(Color(255,255,255))
-           stat_gui_Label1:SetFont("stat_Default")
-           stat_gui_Label1:SetText("")
-
-           stat_gui_Label2 = vgui.Create("DLabel", stat_gui_frame)
-           stat_gui_Label2:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_Label2:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_Label2:SetFont("stat_HudHint")
-           stat_gui_Label2:SetTextColor(Color(255,255,255))
-           stat_gui_Label2:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
-
-           stat_gui_Label3 = vgui.Create("DLabel",stat_gui_frame )
-           stat_gui_Label3:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-           stat_gui_Label3:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-           stat_gui_Label3:SetVisible(false)
-           stat_gui_Label3:SetTextColor(Color(255,255,255))
-           stat_gui_Label3:SetFont("stat_HudHint")
-
-           stat_gui_Label4 = vgui.Create("DLabel", stat_gui_frame)
-           stat_gui_Label4:SetVisible(false)
-           stat_gui_Label4:SetPos( 0.26520833333333 * stat_gui_frame:GetWide(), 0.55 * stat_gui_frame:GetTall() )
-           stat_gui_Label4:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.45 * stat_gui_frame:GetTall() )
-           stat_gui_Label4:SetTextColor(Color(255,255,255))
-           stat_gui_Label4:SetFont("stat_HudHint")
+            stat_gui_Label4 = vgui.Create("DLabel", stat_gui_frame)
+            stat_gui_Label4:SetVisible(false)
+            stat_gui_Label4:SetPos( 0.26520833333333 * stat_gui_frame:GetWide(), 0.55 * stat_gui_frame:GetTall() )
+            stat_gui_Label4:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.45 * stat_gui_frame:GetTall() )
+            stat_gui_Label4:SetTextColor(Color(255,255,255))
+            stat_gui_Label4:SetFont("stat_HudHint")
 end
 --Bindings
 
