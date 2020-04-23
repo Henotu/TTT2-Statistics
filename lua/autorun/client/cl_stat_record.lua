@@ -190,9 +190,11 @@ end)
 hook.Add("TTTBoughtItem","ttt_Statistics_Addon",function(is_item, equip) -- is_item is not needed
 	local RealName = ""
 	for k, v in pairs(weapons.GetList()) do -- Get the weapon's "normal" name
-		if v.id == equip then
+		if v.id == tostring(equip) then
 			RealName = v.PrintName
 			break
+		else
+			RealName = tostring(equip)
 		end
 	end
 	stat_UpdatePData(equip .. "_BoughtByPlayer", "has bought the item "..RealName.." for the", "th time")
