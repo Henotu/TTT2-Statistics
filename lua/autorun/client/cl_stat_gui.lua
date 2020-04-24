@@ -226,9 +226,6 @@ local function stat_SettingWindow()
       stat_DeleteAllEntries()
     elseif e:GetValue() == "Alex.exe" then
       GetConVar("stat_Alex"):SetBool(not GetConVar("stat_Alex"):GetBool())
-    elseif e:GetValue() == "ROLEFIX" then
-      LocalPlayer():RemovePData("stat_TotalRoles")
-      GetConVar("stat_Record"):SetBool(true)
     end
   end
 
