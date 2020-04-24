@@ -35,6 +35,7 @@ Thanks to https://github.com/glua/Royal-Derma-Designer for making it possible to
   EQUIP_BoughtByPlayer
 ]]
 
+local totalAddons = {}
 local Clear_Names = {}
 local ID
 local ID_list = {}
@@ -366,6 +367,9 @@ local function RunWindow(notused, self)
              end
  end
 
+function stat_AddyourAddon(ButtonName, FunctionName)
+  totalAddons[ButtonName] = FunctionName
+end
 --
 --From here on its just drawing the GUI
 --
@@ -379,10 +383,17 @@ function stat_DrawGui()
   stat_gui_frame.Paint = function()
     draw.RoundedBox( 7, 0, 0, stat_gui_frame:GetWide(), stat_gui_frame:GetTall(), Color( 117, 115, 116, 248) )
   end
+  stat_gui_Panel = vgui.Create("DPanel", stat_gui_frame)
+  stat_gui_Panel:SetPos(0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall())
+  stat_gui_Panel:SetSize(0.72979166666667 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall())
+  stat_gui_Panel.Paint = function(w,h)
+    surface.SetDrawColor(0,0,0,0)
+    surface.DrawRect(0 , 0 , stat_gui_Panel:GetWide() , stat_gui_Panel:GetTall() )
+  end
+  hook.Run("StatisticsDrawGui", stat_gui_Panel)
 
   --Get the amount of Addons to display
   --local totalAddons = LocalPlayer():GetPData("stat_totalAddons","")
-  local totalAddons = {}
   totalAddons["Show Player-Kills/Deaths"] = ChangePart1
   totalAddons["TTT General-stats"] = ChangePart2
   totalAddons["Your Game-stats"] = ChangePart3
@@ -426,7 +437,7 @@ function stat_DrawGui()
     if v ~= "" then
       local stat_Button = vgui.Create("DButton", stat_gui_ScrollPanel)
       stat_Button:SetText(v)
-      stat_Button:SetSize(stat_gui_ScrollPanel:GetWide(), (stat_gui_ScrollPanel:GetTall() - 30) / (#totalAddonsSplit - 1))
+      stat_Button:SetSize(stat_gui_ScrollPanel:GetWide(), (stat_gui_ScrollPanel:GetTall() - 30) / (4))
       function stat_Button:Paint(w ,h )
         draw.RoundedBox(5, 0, 0, w, h, Color(253, 251, 252))
       end

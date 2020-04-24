@@ -186,6 +186,20 @@ net.Receive("stat_result", function()
 	end
 end)
 
+local TestLabel
+function stat_Testfunction()
+	TestLabel:SetVisible(not TestLabel:IsVisible())
+end
+
+hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon",function(panel)
+	TestLabel = vgui.Create("DLabel", panel)
+	TestLabel:SetPos(0,0)
+	TestLabel:SetSize(panel:GetWide(),panel:GetTall())
+	TestLabel:SetVisible(false)
+end)
+
+stat_AddyourAddon("TestAddon", stat_Testfunction)
+
 --Get item bought by player and update - if needed - the item-list
 hook.Add("TTTBoughtItem","ttt_Statistics_Addon",function(is_item, equip) -- is_item is not needed
 	local RealName = ""
