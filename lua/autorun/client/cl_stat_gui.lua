@@ -240,83 +240,71 @@ local function stat_SettingWindow()
   e:SetFont("stat_Default")
 end
 
-local function ChangePart1()
-  if not stat_gui_List1:IsVisible() then
-    stat_Show(true,nil,true)
-    GetID_NamesfromDB() -- UpdateIDlist
-    stat_gui_List1:Clear()
-    local TotalKills, TotalDeaths = TotalKills()
-    stat_gui_Label1:SetText("Number of kills: \n" .. TotalKills .. "\n\nNumber of deaths by players: \n" .. TotalDeaths .. "\n\nK/D (only Players): " .. roundTo2Decimal(TotalKills / TotalDeaths))
-  else
-  DrawMenu()
-  end
+local function ChangePart1(status)
+  stat_gui_List1:SetVisible(status)
+  stat_Show(true,nil,true)
+  GetID_NamesfromDB() -- UpdateIDlist
+  stat_gui_List1:Clear()
+  local TotalKills, TotalDeaths = TotalKills()
+  stat_gui_Label1:SetText("Number of kills: \n" .. TotalKills .. "\n\nNumber of deaths by players: \n" .. TotalDeaths .. "\n\nK/D (only Players): " .. roundTo2Decimal(TotalKills / TotalDeaths))
 end
 
-local function ChangePart2()
-  if not stat_gui_Label3:IsVisible() then
-    stat_Show(nil,nil,nil,nil,true,nil)
-    local TotalKills, TotalDeaths = TotalKills()
-    local totalKD = roundTo2Decimal((TotalKills)/(TotalDeaths + LocalPlayer():GetPData("stat_YouKilledYourself", 0) + LocalPlayer():GetPData("stat_UnknownDeath", 0) + LocalPlayer():GetPData("stat_KilledByWorld", 0)))
-    local text = ""
-    local one, two, three = stat_Top3Weapons()
-    text = text .. "Your favourite weapons: \n\nKills with the " .. one .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..one, 0) .. "\nKills with the " .. two .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..two,0) .. "\nKills with the " .. three .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..three, 0)
-    text = text .. "\n\n------------------\n\nYour special Deaths:\n\nTimes you were killed by the world: ".. LocalPlayer():GetPData("stat_KilledByWorld", 0) .. "\nTimes you killed yourself: " .. LocalPlayer():GetPData("stat_YouKilledYourself", 0) .. "\nTimes you were killed by unknown: " .. LocalPlayer():GetPData("stat_UnknownDeath", 0) .. "\n\nYour Total K/D (With Player K/D): " .. totalKD
-    text = text .. "\n\n------------------\n\nIn total you dealt [" .. roundTo2Decimal(LocalPlayer():GetPData("stat_TotalDamageDealt", 0)) .. "] damage\nIn total you received [" .. roundTo2Decimal(LocalPlayer():GetPData("stat_TotalDamageReceived", 0)) .. "] damage"
-    if GetConVar("stat_Alex"):GetBool() then
-      text = text .. "\n\n------------------\n\nAnzahl der Runden, in denen du den Alex gemacht hast: " .. LocalPlayer():GetPData("stat_NoOneHurt", 0)
-    else
-      text = text .. "\n\n------------------\n\nTotal rounds you did no damage to another player: " .. LocalPlayer():GetPData("stat_NoOneHurt", 0)
-    end
-    stat_gui_Label3:SetText(text)
+local function ChangePart2(status)
+  stat_gui_Label3:SetVisible(status)
+  stat_Show(nil,nil,nil,nil,true,nil)
+  local TotalKills, TotalDeaths = TotalKills()
+  local totalKD = roundTo2Decimal((TotalKills)/(TotalDeaths + LocalPlayer():GetPData("stat_YouKilledYourself", 0) + LocalPlayer():GetPData("stat_UnknownDeath", 0) + LocalPlayer():GetPData("stat_KilledByWorld", 0)))
+  local text = ""
+  local one, two, three = stat_Top3Weapons()
+  text = text .. "Your favourite weapons: \n\nKills with the " .. one .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..one, 0) .. "\nKills with the " .. two .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..two,0) .. "\nKills with the " .. three .. ": " .. LocalPlayer():GetPData("stat_Weapon_"..three, 0)
+  text = text .. "\n\n------------------\n\nYour special Deaths:\n\nTimes you were killed by the world: ".. LocalPlayer():GetPData("stat_KilledByWorld", 0) .. "\nTimes you killed yourself: " .. LocalPlayer():GetPData("stat_YouKilledYourself", 0) .. "\nTimes you were killed by unknown: " .. LocalPlayer():GetPData("stat_UnknownDeath", 0) .. "\n\nYour Total K/D (With Player K/D): " .. totalKD
+  text = text .. "\n\n------------------\n\nIn total you dealt [" .. roundTo2Decimal(LocalPlayer():GetPData("stat_TotalDamageDealt", 0)) .. "] damage\nIn total you received [" .. roundTo2Decimal(LocalPlayer():GetPData("stat_TotalDamageReceived", 0)) .. "] damage"
+  if GetConVar("stat_Alex"):GetBool() then
+    text = text .. "\n\n------------------\n\nAnzahl der Runden, in denen du den Alex gemacht hast: " .. LocalPlayer():GetPData("stat_NoOneHurt", 0)
   else
-    DrawMenu()
+    text = text .. "\n\n------------------\n\nTotal rounds you did no damage to another player: " .. LocalPlayer():GetPData("stat_NoOneHurt", 0)
   end
+  stat_gui_Label3:SetText(text)
 end
 
-local function ChangePart3()
-  if (not stat_gui_List3:IsVisible()) then
-    stat_gui_List3:Clear()
-    stat_Show(nil,nil,true,nil,nil,nil,true,true)
-    local string = LocalPlayer():GetPData("stat_TotalRoles", "")
-    local split = string.Split(string , "\n")
-    for k,v in pairs(split) do
-      if v ~= "" then
-        stat_gui_List3:AddLine(v, LocalPlayer():GetPData("stat_TimesYouWere_" .. v, 0))
-      end
+local function ChangePart3(status)
+  stat_gui_List3:SetVisible(status)
+  stat_gui_List3:Clear()
+  stat_Show(nil,nil,true,nil,nil,nil,true,true)
+  local string = LocalPlayer():GetPData("stat_TotalRoles", "")
+  local split = string.Split(string , "\n")
+  for k,v in pairs(split) do
+    if v ~= "" then
+      stat_gui_List3:AddLine(v, LocalPlayer():GetPData("stat_TimesYouWere_" .. v, 0))
     end
-    local stat_won = LocalPlayer():GetPData("stat_RoundsWon", 0)
-    local stat_lost = LocalPlayer():GetPData("stat_RoundsLost", 0)
-    stat_gui_Label1:SetText("Your round-statistics:\n\nRounds played: \n" .. LocalPlayer():GetPData("stat_RoundsPlayed", 0) .. "\n\nRounds won: \n" .. stat_won .. "\n\nRounds lost: \n" .. stat_lost .. "\n\nWin/loose ratio: " .. roundTo2Decimal(stat_won / stat_lost))
-    stat_gui_Label4:SetText("Total bodies identified: " .. LocalPlayer():GetPData("stat_TotalPlayersFound", 0) .. "\n\nTimes you were caught shopping: " .. LocalPlayer():GetPData("stat_DeathWhileShopping", 0))
-  else
-    DrawMenu()
   end
+  local stat_won = LocalPlayer():GetPData("stat_RoundsWon", 0)
+  local stat_lost = LocalPlayer():GetPData("stat_RoundsLost", 0)
+  stat_gui_Label1:SetText("Your round-statistics:\n\nRounds played: \n" .. LocalPlayer():GetPData("stat_RoundsPlayed", 0) .. "\n\nRounds won: \n" .. stat_won .. "\n\nRounds lost: \n" .. stat_lost .. "\n\nWin/loose ratio: " .. roundTo2Decimal(stat_won / stat_lost))
+  stat_gui_Label4:SetText("Total bodies identified: " .. LocalPlayer():GetPData("stat_TotalPlayersFound", 0) .. "\n\nTimes you were caught shopping: " .. LocalPlayer():GetPData("stat_DeathWhileShopping", 0))
 end
 
-local function ChangePart4()
-  if not stat_gui_List4:IsVisible() then
-    local read_item = LocalPlayer():GetPData("stat_ItemBought", "")
-    local split_item = string.Split(read_item, "\n")
-    local ID_name
-    local TotalItems = 0
-    stat_Show(nil,true,true)
-    stat_gui_List4:Clear()
-    for k, v in pairs(split_item) do -- go through every Line of the string
-      if ( k % 2 ~= 0) and (v ~= "") then -- Get the ID of the Item
-        ID_name = v
-        TotalItems = TotalItems + LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0) -- Counting total items
-      end
-      if ( k % 2 == 0) and (v ~= "") then -- If the Realname exists, write it
-        stat_gui_List4:AddLine(v, LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0))
-      elseif ( k % 2 == 0) and (v == "") and (ID_name ~= nil) then -- If the Realname doesnt exists
-        stat_gui_List4:AddLine(ID_name, LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0))
-        ID_name = nil
-      end
-    end
-    stat_gui_Label1:SetText("Total Items Bought: " .. TotalItems .. "\n\n----------------------\n\nNote:\nYou can edit the \ndisplayed name of the item \nby right-clicking on it")
-  else
-    DrawMenu()
+local function ChangePart4(status)
+  stat_gui_List4:SetVisible(status)
+  local read_item = LocalPlayer():GetPData("stat_ItemBought", "")
+  local split_item = string.Split(read_item, "\n")
+  local ID_name
+  local TotalItems = 0
+  stat_Show(nil,true,true)
+  stat_gui_List4:Clear()
+  for k, v in pairs(split_item) do -- go through every Line of the string
+    if ( k % 2 ~= 0) and (v ~= "") then -- Get the ID of the Item
+      ID_name = v
+      TotalItems = TotalItems + LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0) -- Counting total items
   end
+    if ( k % 2 == 0) and (v ~= "") then -- If the Realname exists, write it
+      stat_gui_List4:AddLine(v, LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0))
+    elseif ( k % 2 == 0) and (v == "") and (ID_name ~= nil) then -- If the Realname doesnt exists
+      stat_gui_List4:AddLine(ID_name, LocalPlayer():GetPData(ID_name .. "_BoughtByPlayer", 0))
+      ID_name = nil
+    end
+  end
+  stat_gui_Label1:SetText("Total Items Bought: " .. TotalItems .. "\n\n----------------------\n\nNote:\nYou can edit the \ndisplayed name of the item \nby right-clicking on it")
 end
 
 -- If the player sets a custom name for an item
@@ -444,7 +432,19 @@ function stat_DrawGui()
       stat_Button:SetFont("stat_Default")
       stat_Button:Dock(TOP)
       stat_Button:DockMargin(0,0,0,10)
-      stat_Button.DoClick = totalAddons[v]
+      stat_Button.DoClick = function()
+        for _, p in pairs(totalAddonsSplit) do
+          if p == v then
+            print(v .. "  v")
+            totalAddons[v](true)
+          else
+            if p ~= "" then
+              print(p .. "  p")
+              totalAddons[p](false)
+            end
+          end
+        end
+      end
       stat_gui_ScrollPanel:AddItem(stat_Button)
     end
   end
@@ -456,13 +456,13 @@ function stat_DrawGui()
             stat_gui_ButtonS:SetFont("stat_Default")
             stat_gui_ButtonS.DoClick = stat_SettingWindow
 
-            stat_gui_List1 = vgui.Create( "DListView", stat_gui_frame )
+            --[[stat_gui_List1 = vgui.Create( "DListView", stat_gui_frame )
             stat_gui_List1:SetVisible(false)
             stat_gui_List1:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
             stat_gui_List1:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
             stat_gui_List1:AddColumn("Name")
             stat_gui_List1:AddColumn("Kills")
-            stat_gui_List1:AddColumn("Deaths By")
+            stat_gui_List1:AddColumn("Deaths By")]]
 
             stat_gui_List3 = vgui.Create("DListView", stat_gui_frame)
             stat_gui_List3:SetVisible(false)

@@ -187,8 +187,8 @@ net.Receive("stat_result", function()
 end)
 
 local TestLabel
-function stat_Testfunction()
-	TestLabel:SetVisible(not TestLabel:IsVisible())
+function stat_Testfunction(status)
+	TestLabel:SetVisible(status)
 end
 
 hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon",function(panel)
