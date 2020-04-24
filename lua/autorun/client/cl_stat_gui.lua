@@ -478,7 +478,7 @@ end
 
 concommand.Add("stat_DrawGui", stat_DrawGui)
 
-hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon" ,function()
+hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_gui" ,function()
   bind.Register("ttt_Statistics_Addon", stat_DrawGui , nil, nil, "Show Statistics") --TEMPORARY LINE: NEEDS EDIT
   AddTTT2AddonDev("76561198143340527")
 end)
