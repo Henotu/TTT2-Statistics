@@ -4,11 +4,11 @@ If you want to use parts of this code or you find a way to improve it, message m
 I write LocalPlayer() everytime instead of making a variable because it led to bugs with gmod
 ]]
 --Fixes Bugs from V 0.99
-hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_record" ,function()
-	if LocalPlayer():GetPData("stat_Bugfix0_99", 0) ~= 1 then
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_record" ,function()
+	if (tonumber(LocalPlayer():GetPData("stat_Bugfix0_99", 0)) ~= 1) then
 		LocalPlayer():RemovePData("stat_TotalRoles")
 		GetConVar("stat_Record"):SetBool(true)
-		LocalPlayer():SetPData("stat_Bugfix", 1)
+		LocalPlayer():SetPData("stat_Bugfix0_99", 1)
 	end
 end)
 
