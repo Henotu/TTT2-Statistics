@@ -4,9 +4,18 @@ If you want to use parts of this code or you find a way to improve it, message m
 I write LocalPlayer() everytime instead of making a variable because it led to bugs with gmod
 ]]
 
-local tshop_exists = false
-local stat_playerhurt = false
-local roundActive = false
+--Fixes Bugs from V 0.99
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_record" ,function()
+	if (tonumber(LocalPlayer():GetPData("stat_Bugfix0_99", 0)) ~= 1) then
+		LocalPlayer():RemovePData("stat_TotalRoles")
+		GetConVar("stat_Record"):SetBool(true)
+		LocalPlayer():SetPData("stat_Bugfix0_99", 1)
+	end
+end)
+
+local TShopExists = false
+local Playerhurt = false
+local RoundActive = false
 
 local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
 	for k ,v in pairs(tbl) do
@@ -17,8 +26,8 @@ local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
 	return false
 end
 
-function stat_UpdatePData(Name, event1, event2) -- Increases the given Entry by one and
-	if (GetConVar("stat_Record"):GetBool()) and (roundActive) then
+function StatisticsUpdatePData(Name, event1, event2) -- Increases the given Entry by one and
+	if (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 		LocalPlayer():SetPData(Name, LocalPlayer():GetPData(Name, 0) +1)
 	end
 	local numbers = {20, 50, 100, 200, 500, 1000, 1500, 2000, 2500, 3000}
@@ -46,7 +55,7 @@ function NameDataBase(ID) -- makes an entry to save the names used by the Accoun
 end
 
 -- Get the current weapon the player is holding and Update its Kills and/or add it to the TotalWeapons-entry
-function stat_FavWeapon()
+local function FavWeapon()
 	if (IsValid(LocalPlayer()) and IsValid(LocalPlayer():GetActiveWeapon())) then
 		local weapon = LocalPlayer():GetActiveWeapon()
 		local weaponName = weapon:GetPrintName() or "unarmed_name"
@@ -62,7 +71,7 @@ function stat_FavWeapon()
 		if (not testing) and (GetConVar("stat_Record"):GetBool()) then
 			LocalPlayer():SetPData("stat_TotalWeapons",read .. weaponName .. "\n")
 		end
-		stat_UpdatePData("stat_Weapon_" .. weaponName)
+		StatisticsUpdatePData("stat_Weapon_" .. weaponName)
 	end
 end
 
@@ -88,13 +97,13 @@ function ItemBought(equip)
 			end
 		end
 		-- Make Custom names for the Radar, Disguiser and Bodyarmor, because otherwise nobody knows what "1" etc means
-		if equip == "1" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
+		if equip == "1" and (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Body Armor\n")
-		elseif equip == "2" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
+		elseif equip == "2" and (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Radar\n")
-		elseif equip == "4" and (GetConVar("stat_Record"):GetBool()) and (roundActive) then
+		elseif equip == "4" and (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. "Disguiser\n")
-		elseif (GetConVar("stat_Record"):GetBool()) and (roundActive) then
+		elseif (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 			LocalPlayer():SetPData("stat_ItemBought", read .. equip .. "\n" .. RealName .. "\n")
 		end
 end
@@ -107,27 +116,27 @@ net.Receive("stat_Attaker",function() --Receive the attaker entity by server
 		-- Choose only the cases where the Localplayer gets killed and doesnt kill himself
 		if (victim == LocalPlayer()) and (attaker ~= LocalPlayer()) and (attaker:IsValid()) and (type(attaker) == type(LocalPlayer())) then -- IMPORTANT attaker ~= LocalPlayer
 			-- Uptdate or create the entry of how many times the player got killed by his attaker
-			stat_UpdatePData(attaker:AccountID().."_KilledYou")
+			StatisticsUpdatePData(attaker:AccountID().."_KilledYou")
 			NameDataBase(attaker)
-			--Check if the player was shopping; tshop_exists is set in the hook "TTTEquipmentTabs"
-			if tshop_exists == true then
-				stat_UpdatePData("stat_DeathWhileShopping","achieved", " deaths while shopping")
+			--Check if the player was shopping; TShopExists is set in the hook "TTTEquipmentTabs"
+			if TShopExists == true then
+				StatisticsUpdatePData("stat_DeathWhileShopping","achieved", " deaths while shopping")
 			end
 		elseif (attaker == LocalPlayer()) and (victim ~= LocalPlayer()) and (victim:IsValid()) and (not victim:IsBot()) and (type(victim) == type(LocalPlayer())) then
 			-- Update the entry of how many times the player killed another Player
-			stat_UpdatePData(victim:AccountID() .. "_KilledByYou", "has killed " ..victim:GetName().." for the", "th time")
+			StatisticsUpdatePData(victim:AccountID() .. "_KilledByYou", "has killed " ..victim:GetName().." for the", "th time")
 			NameDataBase(victim)
-			stat_FavWeapon()
+			FavWeapon()
 		elseif (attaker == LocalPlayer()) and (victim == LocalPlayer()) then
 			-- Suicides
-			stat_UpdatePData("stat_YouKilledYourself", "killed himself"," times")
+			StatisticsUpdatePData("stat_YouKilledYourself", "killed himself"," times")
 		elseif (attaker:IsWorld()) and (victim == LocalPlayer()) then
 			-- Deaths by world
-			stat_UpdatePData("stat_KilledByWorld")
+			StatisticsUpdatePData("stat_KilledByWorld")
 		else
 			-- Deaths by unknown
 			if (victim == LocalPlayer()) then
-				stat_UpdatePData("stat_UnknownDeath")
+				StatisticsUpdatePData("stat_UnknownDeath")
 			end
 		end
 	end)
@@ -137,22 +146,22 @@ end)
 net.Receive("stat_Player", function()
 	local player = net.ReadEntity()
 	if player == LocalPlayer() then
-		stat_UpdatePData("stat_TotalPlayersFound")
+		StatisticsUpdatePData("stat_TotalPlayersFound")
 	end
 end)
 
--- Updates stat_playerhurt when the player hurts someone; Update the Damage caused by the player
+-- Updates Playerhurt when the player hurts someone; Update the Damage caused by the player
 net.Receive("stat_Hurt", function()
 	local entity = net.ReadEntity()
 	if entity == LocalPlayer() then
-		stat_playerhurt = true
+		Playerhurt = true
 		net.Receive("stat_Damage", function()
 			local damage = net.ReadFloat()
 			local max = GetConVar("stat_MaxDamage"):GetInt()
 			if damage > max then
 				damage = max -- Set the max damage defined by ConVar
 			end
-			if GetConVar("stat_Record"):GetBool() and (roundActive) then
+			if GetConVar("stat_Record"):GetBool() and (RoundActive) then
 				LocalPlayer():SetPData("stat_TotalDamageDealt", LocalPlayer():GetPData("stat_TotalDamageDealt", 0) + damage)
 			end
 		end)
@@ -169,7 +178,7 @@ net.Receive("stat_GotHurt", function()
 			if damage > max then
 				damage = max -- Set the max damage defined by ConVar
 			end
-			if GetConVar("stat_Record"):GetBool() and (roundActive) then
+			if GetConVar("stat_Record"):GetBool() and (RoundActive) then
 				LocalPlayer():SetPData("stat_TotalDamageReceived", LocalPlayer():GetPData("stat_TotalDamageReceived", 0) + damage)
 			end
 		end)
@@ -180,25 +189,11 @@ end)
 net.Receive("stat_result", function()
 	local result = net.ReadString()
 	if result == LocalPlayer():GetTeam() then
-		stat_UpdatePData("stat_RoundsWon")
+		StatisticsUpdatePData("stat_RoundsWon")
 	else
-		stat_UpdatePData("stat_RoundsLost")
+		StatisticsUpdatePData("stat_RoundsLost")
 	end
 end)
-
-local TestLabel
-function stat_Testfunction(status)
-	TestLabel:SetVisible(status)
-end
-
-hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon",function(panel)
-	TestLabel = vgui.Create("DLabel", panel)
-	TestLabel:SetPos(0,0)
-	TestLabel:SetSize(panel:GetWide(),panel:GetTall())
-	TestLabel:SetVisible(false)
-end)
-
-stat_AddyourAddon("TestAddon", stat_Testfunction)
 
 --Get item bought by player and update - if needed - the item-list
 hook.Add("TTTBoughtItem","ttt_Statistics_Addon",function(is_item, equip) -- is_item is not needed
@@ -211,49 +206,61 @@ hook.Add("TTTBoughtItem","ttt_Statistics_Addon",function(is_item, equip) -- is_i
 			RealName = tostring(equip)
 		end
 	end
-	stat_UpdatePData(equip .. "_BoughtByPlayer", "has bought the item "..RealName.." for the", "th time")
+	StatisticsUpdatePData(equip .. "_BoughtByPlayer", "has bought the item "..RealName.." for the", "th time")
 	ItemBought(equip)
 end)
 
 --Update Roles; roundsPlayed
 hook.Add("TTTBeginRound", "ttt_Statistics_Addon", function()
-	roundActive = true
-	stat_playerhurt = false
-	local stat_name = "stat_TimesYouWere_" .. LocalPlayer():GetRoleString()
-	local totalRoles_string = LocalPlayer():GetPData("stat_TotalRoles", "")
-	local totalRoles_table = string.Split(totalRoles_string, "\n")
-	local stat_testing = false
+	RoundActive = true
+	Playerhurt = false
+	local Rolename = "stat_TimesYouWere_" .. LocalPlayer():GetRoleString()
+	local TotalRolesString = LocalPlayer():GetPData("stat_TotalRoles", "")
+	local TotalRolesTable = string.Split(TotalRolesString, "\n")
+	local testing = false
 	-- Test if the role is stored in the Database, if not store it
-	for k, v in pairs(totalRoles_table) do
+	for k, v in pairs(TotalRolesTable) do
 		if v == LocalPlayer():GetRoleString() then
-			stat_testing = true
+			testing = true
 			break
 		end
 	end
 	if (not testing) and (GetConVar("stat_Record"):GetBool()) then
-		totalRoles_string = totalRoles_string .. LocalPlayer():GetRoleString() .. "\n"
-		LocalPlayer():SetPData("stat_TotalRoles", totalRoles_string)
+		TotalRolesString = TotalRolesString .. LocalPlayer():GetRoleString() .. "\n"
+		LocalPlayer():SetPData("stat_TotalRoles", TotalRolesString)
 	end
 	-- Update the times the player was the role
-	stat_UpdatePData(stat_name)
+	StatisticsUpdatePData(Rolename)
 	--How many times the LocalPlayer() started rounds:
-	stat_UpdatePData("stat_RoundsPlayed", "played his/her", "th round")
+	StatisticsUpdatePData("stat_RoundsPlayed", "played his/her", "th round")
 end)
 
 
 hook.Add("TTTEndRound", "ttt_Statistics_Addon", function()
-	tshop_exists = false -- Just in case it doesn't got updated
-	roundActive = false
+	TShopExists = false -- Just in case it doesn't got updated
+	RoundActive = false
 	-- Update the DB if player hurt someone
-	if (not stat_playerhurt) then
-		stat_UpdatePData("stat_NoOneHurt")
+	if (not Playerhurt) then
+		StatisticsUpdatePData("stat_NoOneHurt")
 	end
 end)
 
--- Update tshop_exists when the T-shop gets opened/closed
+-- Update TShopExists when the T-shop gets opened/closed
 hook.Add("TTTEquipmentTabs", "ttt_Statistics_Addon", function(shoppanel)
-	tshop_exists = true
+	TShopExists = true
 	function shoppanel:OnRemove()
-		tshop_exists = false
+		TShopExists = false
+	end
+end)
+
+hook.Add("OnPlayerChat", "ttt_Statistics_Addon", function(ply, Text)
+	if ply ~= LocalPlayer() then
+		local LowerText = string.lower(Text)
+		local SearchText = string.lower("!rdm" .. LocalPlayer():GetName)
+		print(string.find(LowerText, SearchText))
+		if (string.find(LowerText, SearchText)) ~= nil) then
+			StatisticsUpdatePData("stat_Rdm")
+			print("!rdm")
+		end
 	end
 end)
