@@ -1,10 +1,12 @@
-local label
+local Label
+
 
 hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon_GameStats", function(panel)
-  label = vgui.Create("DLabel", panel)
-  label:SetPos(0,0)
-  label:SetSize(panel:GetWide(), panel:GetTall())
-  label:SetFont("StatisticsHudHint")
+  Label = vgui.Create("DLabel", panel)
+  Label:SetPos(0,0)
+  Label:SetSize(panel:GetWide(), panel:GetTall())
+  Label:SetFont("StatisticsHudHint")
+  Label:SetTextColor(Color(255,255,255))
 end)
 
 --Name says it all
@@ -15,7 +17,7 @@ end
 local function TotalKills()
   local IDList = {}
   local ID
-  local ClearNames
+  local ClearNames = {}
   local ReadName = LocalPlayer():GetPData("stat_NameDataBase", "")
   local SplitName = string.Split(ReadName, "\n")
   local TotalKills = 0 -- Both Variables are used later
@@ -28,7 +30,7 @@ local function TotalKills()
       table.insert(IDList, ID) -- Fill the IDList
     end
   end
-  for k, v in pairs(ID_list) do --get every ID from the ID_list
+  for k, v in pairs(IDList) do --get every ID from the IDlist
     local KilledYou = LocalPlayer():GetPData(v .."_KilledYou", 0) --get the value of kills of current id
     local KilledByYou = LocalPlayer():GetPData(v .. "_KilledByYou", 0)
     if (KilledYou ~= nil) and (KilledByYou ~= nil) then --Test, if ID got any kills
@@ -71,7 +73,7 @@ end
 
 
 function StatisticsDrawGameStats(visible)
-  label:SetVisible(visible)
+  Label:SetVisible(visible)
   local TotalKills, TotalDeaths = TotalKills()
   local TotalKD = roundTo2Decimal((TotalKills)/(TotalDeaths + LocalPlayer():GetPData("stat_YouKilledYourself", 0) + LocalPlayer():GetPData("stat_UnknownDeath", 0) + LocalPlayer():GetPData("stat_KilledByWorld", 0)))
   local Text = ""
@@ -84,9 +86,9 @@ function StatisticsDrawGameStats(visible)
   else
     Text = Text .. "\n\n------------------\n\nTotal rounds you did no damage to another player: " .. LocalPlayer():GetPData("stat_NoOneHurt", 0)
   end
-  label:SetText(Text)
+  Label:SetText(Text)
 end
 
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_GameStats", function()
-  AddYourStatisticsAddon("Your Game-stats", StatisticsDrawGameStats)
+  AddYourStatisticsAddon("Your Game-stats", StatisticsDrawGameStats, 2)
 end)

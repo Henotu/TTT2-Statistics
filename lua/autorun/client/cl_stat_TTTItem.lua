@@ -51,12 +51,19 @@ local function RunWindow(notused, self)
 hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon_TTTItem", function(panel)
   ItemList = vgui.Create("DListView", panel)
   ItemList:SetPos( 0,0)
-  ItemList:SetSize( 0.49018416143 * panel:GetWide(), panel:GetTall() )
+  ItemList:SetSize( 0.7450811304596 * panel:GetWide(), panel:GetTall() )
   ItemList:AddColumn("Name of the item")
   ItemList:AddColumn("Times bought")
   ItemList.OnRowRightClick = function(notused, self)
     RunWindow(notused ,self)
   end
+
+  ItemLabel = vgui.Create("DLabel", panel)
+  ItemLabel:SetPos(0.78075934913 * panel:GetWide(), 0)
+  ItemLabel:SetSize(0.21924065087068 * panel:GetWide() , panel:GetTall())
+  ItemLabel:SetFont("StatisticsDefault")
+  ItemLabel:SetTextColor(Color(255,255,255))
+
 end)
 
 function StatisticsDrawTTTItem(visible)
@@ -83,5 +90,5 @@ function StatisticsDrawTTTItem(visible)
 end
 
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_TTTItem", function()
-  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItem)
+  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItem, 4)
 end)

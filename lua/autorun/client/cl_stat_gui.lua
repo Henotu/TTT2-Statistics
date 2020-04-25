@@ -35,15 +35,15 @@ Thanks to https://github.com/glua/Royal-Derma-Designer for making it possible to
   EQUIP_BoughtByPlayer
 ]]
 
-local totalAddons = {}
+local TotalAddons = {}
+local ButtonOrder = {}
 
 surface.CreateFont("StatisticsDefault", {
   font = "Default",
   extended = false,
   size = (ScreenScale(4.4)),
   weight = 400,
-  blursize = 0
-})
+  blursize = 0})
 
 --Make custom font that scales with the Display
 surface.CreateFont("StatisticsHudHint", {
@@ -53,35 +53,51 @@ surface.CreateFont("StatisticsHudHint", {
   weight = 10000,
   blursize = 0})
 
+--Adds all addons to addon-table
+function AddYourStatisticsAddon(ButtonName, FunctionName, Number)
+  TotalAddons[ButtonName] = FunctionName
+  if Number ~= nil then
+    ButtonOrder[ButtonName] = Number
+  end
+end
+--[[
+local function OrderButtons(Table)
+  for k, v in pairs(table.GetKeys(Table)) do
+    for n, p in pairs(table.SortByKey(ButtonOrder, true)) do
+      TotalAddons[p] = v
+    end
+  end
+end]]
+
 -- Removes all Data from the gmod DB
-local function stat_DeleteAllEntries()
-  local read_name = LocalPlayer():GetPData("stat_NameDataBase", "")
-  local split_name = string.Split(read_name, "\n")
-  local read_item = LocalPlayer():GetPData("stat_ItemBought", "")
-  local split_item = string.Split(read_item, "\n")
-  local totalRoles_string = LocalPlayer():GetPData("stat_TotalRoles", "")
-  local totalRoles_table = string.Split(totalRoles_string, "\n")
-  local read_weapon = LocalPlayer():GetPData("stat_NameDataBase", "")
-  local split_weapon = string.Split("read_weapon", "\n")
+local function DeleteAllEntries()
+  local NameString = LocalPlayer():GetPData("stat_NameDataBase", "")
+  local NameSplit = string.Split(NameString, "\n")
+  local ItemString = LocalPlayer():GetPData("stat_ItemBought", "")
+  local ItemSplit = string.Split(ItemString, "\n")
+  local TotalRolesString = LocalPlayer():GetPData("stat_TotalRoles", "")
+  local TotalRolesSplit = string.Split(TotalRolesString, "\n")
+  local WeaponRead = LocalPlayer():GetPData("stat_NameDataBase", "")
+  local WeaponSplit = string.Split("WeaponRead", "\n")
   -- Delete Entries for Items
-  for k, v in pairs(split_item) do
+  for k, v in pairs(ItemSplit) do
     if (k % 2 ~= 0) then
       LocalPlayer():RemovePData(v .. "_BoughtByPlayer")
     end
   end
   -- Delete Entries for Names and ID
-  for k, v in pairs(split_name) do
+  for k, v in pairs(NameSplit) do
     if (k % 2 ~= 0) then
       LocalPlayer():RemovePData(v .. "_KilledYou")
       LocalPlayer():RemovePData(v .. "_KilledByYou")
     end
   end
   --Delete Entries for Roles
-  for k, v in pairs(totalRoles_table) do
+  for k, v in pairs(TotalRolesSplit) do
     LocalPlayer():RemovePData("stat_TimesYouWere_" .. v)
   end
   --Delete Entries for Weapons
-  for k , v in pairs(split_weapon) do
+  for k , v in pairs(WeaponSplit) do
     LocalPlayer():RemovePData("stat_Weapon_" .. v)
   end
 
@@ -105,7 +121,7 @@ local function stat_DeleteAllEntries()
 end
 
 --Draws the Setting-Window
-local function stat_SettingWindow()
+local function DrawSettingsWindow()
   local frame = vgui.Create("DFrame")
   frame:SetPos( 0.32760416666667 * ScrW(), 0.35185185185185 * ScrH() )
   frame:SetSize( 0.22760416666667 * ScrW(), 0.21666666666667 * ScrH() )
@@ -147,7 +163,7 @@ local function stat_SettingWindow()
   e:SetSize( 0.26544622425629 * frame:GetWide(), 0.12820512820513 * frame:GetTall() )
   e.OnEnter = function()
     if e:GetValue() == "DELETE" then
-      stat_DeleteAllEntries()
+      DeleteAllEntries()
     elseif e:GetValue() == "Alex.exe" then
       GetConVar("stat_Alex"):SetBool(not GetConVar("stat_Alex"):GetBool())
     end
@@ -160,50 +176,53 @@ local function stat_SettingWindow()
   e:SetFont("StatisticsDefault")
 end
 
-function AddYourStatisticsAddon(ButtonName, FunctionName)
-  totalAddons[ButtonName] = FunctionName
+local function DrawMenu(Button, Label, visible)
+  Button:SetVisible(visible)
+  Label:SetVisible(visible)
+  local TotalFunction
+  if (visible) then
+    for k , v in pairs(table.GetKeys(TotalAddons)) do
+      TotalAddons[v](false)
+    end
+  end
 end
+
 --
 --From here on its just drawing the GUI
 --
 
-function stat_DrawGui()
-  stat_gui_frame = vgui.Create("DFrame")
-  stat_gui_frame:SetPos( 0.25 * ScrW(), 0.25 * ScrH() )
-  stat_gui_frame:SetSize( 0.5 * ScrW(), 0.5 * ScrH() )
-  stat_gui_frame:SetTitle("TTT-Statistics-Addon")
-  stat_gui_frame:MakePopup()
-  stat_gui_frame.Paint = function()
-    draw.RoundedBox( 7, 0, 0, stat_gui_frame:GetWide(), stat_gui_frame:GetTall(), Color( 117, 115, 116, 248) )
+function DrawStatisticsGUI()
+  local MainFrame = vgui.Create("DFrame")
+  MainFrame:SetPos( 0.25 * ScrW(), 0.25 * ScrH() )
+  MainFrame:SetSize( 0.5 * ScrW(), 0.5 * ScrH() )
+  MainFrame:SetTitle("TTT-Statistics-Addon")
+  MainFrame:MakePopup()
+  MainFrame.Paint = function()
+    draw.RoundedBox( 7, 0, 0, MainFrame:GetWide(), MainFrame:GetTall(), Color( 117, 115, 116, 248) )
   end
-  stat_gui_Panel = vgui.Create("DPanel", stat_gui_frame)
-  stat_gui_Panel:SetPos(0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall())
-  stat_gui_Panel:SetSize(0.72979166666667 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall())
-  stat_gui_Panel.Paint = function(w,h)
+  local AddonPanel = vgui.Create("DPanel", MainFrame)
+  AddonPanel:SetPos(0.25520833333333 * MainFrame:GetWide(), 0.07037037037037 * MainFrame:GetTall())
+  AddonPanel:SetSize(0.72979166666667 * MainFrame:GetWide(), 0.9014814814 * MainFrame:GetTall())
+  AddonPanel.Paint = function(w,h)
     surface.SetDrawColor(0,0,0,0)
-    surface.DrawRect(0 , 0 , stat_gui_Panel:GetWide() , stat_gui_Panel:GetTall() )
+    surface.DrawRect(0 , 0 , AddonPanel:GetWide() , AddonPanel:GetTall() )
   end
-  hook.Run("StatisticsDrawGui", stat_gui_Panel)
+  hook.Run("StatisticsDrawGui", AddonPanel)
 
   --Get the amount of Addons to display
-  --local totalAddons = LocalPlayer():GetPData("stat_totalAddons","")
-  totalAddons["Show Player-Kills/Deaths"] = ChangePart1
-  totalAddons["TTT General-stats"] = ChangePart2
-  totalAddons["Your Game-stats"] = ChangePart3
-  totalAddons["TTT Item-stats"] = ChangePart4
-  local totalAddonsString = ""
-  for k, v in pairs(table.GetKeys(totalAddons)) do
-    totalAddonsString = totalAddonsString .. v .. "\n"
+  local TotalAddonsString = ""
+  for k, v in pairs(table.GetKeys(TotalAddons)) do
+    TotalAddonsString = TotalAddonsString .. v .. "\n"
   end
 
-  local totalAddonsSplit = string.Split(totalAddonsString, "\n")
+  local TotalAddonsSplit = string.Split(TotalAddonsString, "\n")
 
   --make a panel for unlimited Buttons
-  stat_gui_ScrollPanel = vgui.Create("DScrollPanel", stat_gui_frame)
-  stat_gui_ScrollPanel:SetPos(0.014583333333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall())
-  stat_gui_ScrollPanel:SetSize( 0.20833333333333 * stat_gui_frame:GetWide(), 0.9014814814 * stat_gui_frame:GetTall())
+  local ScrollPanel = vgui.Create("DScrollPanel", MainFrame)
+  ScrollPanel:SetPos(0.014583333333333 * MainFrame:GetWide(), 0.07037037037037 * MainFrame:GetTall())
+  ScrollPanel:SetSize( 0.20833333333333 * MainFrame:GetWide(), 0.9014814814 * MainFrame:GetTall())
   --Paint the ScrollBar of the Panel
-  local ScrollBar = stat_gui_ScrollPanel:GetVBar()
+  local ScrollBar = ScrollPanel:GetVBar()
   function ScrollBar:Paint(w, h)
 	   draw.RoundedBox(0, 0, 0, 0, 0, Color(0, 0, 0))
   end
@@ -216,54 +235,66 @@ function stat_DrawGui()
   function ScrollBar.btnGrip:Paint(w, h)
 	   draw.RoundedBox(0, 0, 0, 4, h, Color(169, 167, 168))
   end
+
+  --"Main Menu"
+  local SettingsButton = vgui.Create( "DButton", MainFrame )
+  SettingsButton:SetPos( 0.4 * MainFrame:GetWide(), 0.76851851851852 * MainFrame:GetTall() )
+  SettingsButton:SetSize( 0.2 * MainFrame:GetWide(), 0.1 * MainFrame:GetTall() )
+  SettingsButton:SetText("Settings")
+  SettingsButton:SetFont("StatisticsDefault")
+  SettingsButton.DoClick = DrawSettingsWindow
+  function SettingsButton:Paint(w ,h )
+    draw.RoundedBox(5, 0, 0, w, h, Color(253, 251, 252))
+  end
+
+  local MainLabel = vgui.Create("DLabel", MainFrame)
+  MainLabel:SetPos( 0.25520833333333 * MainFrame:GetWide(), 0.07037037037037 * MainFrame:GetTall() )
+  MainLabel:SetSize( 0.543754 * MainFrame:GetWide(), 0.87777777777778 * MainFrame:GetTall() )
+  MainLabel:SetFont("StatisticsHudHint")
+  MainLabel:SetTextColor(Color(255,255,255))
+  MainLabel:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
+
   --Create Buttons
-  for k , v in pairs(totalAddonsSplit) do
+  for k , v in pairs(TotalAddonsSplit) do
+    StatisticsButtonPressed = ""
     if v ~= "" then
-      local stat_Button = vgui.Create("DButton", stat_gui_ScrollPanel)
-      stat_Button:SetText(v)
-      stat_Button:SetSize(stat_gui_ScrollPanel:GetWide(), (stat_gui_ScrollPanel:GetTall() - 30) / (4))
-      function stat_Button:Paint(w ,h )
+      local SideButtons = vgui.Create("DButton", ScrollPanel)
+      SideButtons:SetText(v)
+      SideButtons:SetSize(ScrollPanel:GetWide(), (ScrollPanel:GetTall() - 30) / (4))
+      function SideButtons:Paint(w ,h )
         draw.RoundedBox(5, 0, 0, w, h, Color(253, 251, 252))
       end
-      stat_Button:SetFont("StatisticsDefault")
-      stat_Button:Dock(TOP)
-      stat_Button:DockMargin(0,0,0,10)
-      stat_Button.DoClick = function()
-        for _, p in pairs(totalAddonsSplit) do
-          if p == v then
-            print(v .. "  v")
-            totalAddons[v](true)
+      SideButtons:SetFont("StatisticsDefault")
+      SideButtons:Dock(TOP)
+      SideButtons:DockMargin(0,0,0,10)
+      SideButtons.DoClick = function()
+        for _, p in pairs(TotalAddonsSplit) do
+          if (p == v) and (v ~= StatisticsButtonPressed) then
+            print(v .. "  v") --TEMP
+            TotalAddons[v](true)
+            DrawMenu(SettingsButton, MainLabel, false)
+            StatisticsButtonPressed = v
+          elseif (p == v) and (v == StatisticsButtonPressed) then
+            DrawMenu(SettingsButton, MainLabel, true)
+            StatisticsButtonPressed = ""
           else
             if p ~= "" then
-              print(p .. "  p")
-              totalAddons[p](false)
+              print(p .. "  p") --TEMP
+              TotalAddons[p](false)
             end
           end
         end
       end
-      stat_gui_ScrollPanel:AddItem(stat_Button)
+      ScrollPanel:AddItem(SideButtons)
+      DrawMenu(SettingsButton, MainLabel, true)
     end
   end
-
-  stat_gui_ButtonS = vgui.Create( "DButton", stat_gui_frame )
-            stat_gui_ButtonS:SetPos( 0.4 * stat_gui_frame:GetWide(), 0.76851851851852 * stat_gui_frame:GetTall() )
-            stat_gui_ButtonS:SetSize( 0.2 * stat_gui_frame:GetWide(), 0.1 * stat_gui_frame:GetTall() )
-            stat_gui_ButtonS:SetText("Settings")
-            stat_gui_ButtonS:SetFont("StatisticsDefault")
-            stat_gui_ButtonS.DoClick = stat_SettingWindow
-
-            stat_gui_Label2 = vgui.Create("DLabel", stat_gui_frame)
-            stat_gui_Label2:SetPos( 0.25520833333333 * stat_gui_frame:GetWide(), 0.07037037037037 * stat_gui_frame:GetTall() )
-            stat_gui_Label2:SetSize( 0.543754 * stat_gui_frame:GetWide(), 0.87777777777778 * stat_gui_frame:GetTall() )
-            stat_gui_Label2:SetFont("StatisticsHudHint")
-            stat_gui_Label2:SetTextColor(Color(255,255,255))
-            stat_gui_Label2:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
 end
 --Bindings
 
-concommand.Add("stat_DrawGui", stat_DrawGui)
+concommand.Add("stat_DrawGui", DrawStatisticsGUI)
 
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon" ,function()
-  bind.Register("ttt_Statistics_Addon", stat_DrawGui , nil, nil, "Show Statistics") --TEMPORARY LINE: NEEDS EDIT
+  bind.Register("ttt_Statistics_Addon", DrawStatisticsGUI , nil, nil, "Show Statistics") --TEMPORARY LINE: NEEDS EDIT
   AddTTT2AddonDev("76561198143340527")
 end)

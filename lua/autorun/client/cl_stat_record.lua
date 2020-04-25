@@ -253,12 +253,13 @@ hook.Add("TTTEquipmentTabs", "ttt_Statistics_Addon", function(shoppanel)
 	end
 end)
 
+--Records if someone types "!rdm [PLAYERNAME]" in Chat; Part of a easteregg for r/Arrrrr
 hook.Add("OnPlayerChat", "ttt_Statistics_Addon", function(ply, Text)
 	if ply ~= LocalPlayer() then
 		local LowerText = string.lower(Text)
-		local SearchText = string.lower("!rdm" .. LocalPlayer():GetName)
+		local SearchText = string.lower("!rdm" .. LocalPlayer():GetName())
 		print(string.find(LowerText, SearchText))
-		if (string.find(LowerText, SearchText)) ~= nil) then
+		if ((string.find(LowerText, SearchText)) ~= nil) then
 			StatisticsUpdatePData("stat_Rdm")
 			print("!rdm")
 		end

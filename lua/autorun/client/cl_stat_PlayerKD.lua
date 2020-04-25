@@ -2,22 +2,30 @@ local KDList
 local KDLabel
 local IDList
 local ID
-local ClearNames
+local ClearNames = {}
 
+surface.CreateFont("StatisticsDefault", {
+  font = "Default",
+  extended = false,
+  size = (ScreenScale(4.4)),
+  weight = 400,
+  blursize = 0
+})
 
-hook.Add("StatisticsDrawGui", function(panel)
+hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon_PlayerKD", function(panel)
   KDList = vgui.Create( "DListView", panel )
   KDList:SetVisible(false)
   KDList:SetPos( 0,0)
-  KDList:SetSize( 0.49018416143 * panel:GetWide(), panel:GetTall() )
+  KDList:SetSize( 0.7450811304596 * panel:GetWide(), panel:GetTall() )
   KDList:AddColumn("Name")
   KDList:AddColumn("Kills")
   KDList:AddColumn("Deaths By")
 
   KDLabel = vgui.Create("DLabel", panel)
-  KDLabel:SetPos(0.602078125 * panel:GetWide(), 0)
-  KDLabel:SetSize(0.11676666666 * panel:GetWide() , panel:GetTall())
+  KDLabel:SetPos(0.78075934913 * panel:GetWide(), 0)
+  KDLabel:SetSize(0.21924065087068 * panel:GetWide() , panel:GetTall())
   KDLabel:SetFont("StatisticsDefault")
+  KDLabel:SetTextColor(Color(255,255,255))
 end)
 
 --Name says it all
@@ -33,7 +41,7 @@ local function TotalKills()
     local KilledYou = LocalPlayer():GetPData(v .."_KilledYou", 0) --get the value of kills of current id
     local KilledByYou = LocalPlayer():GetPData(v .. "_KilledByYou", 0)
     if (KilledYou ~= nil) and (KilledByYou ~= nil) then --Test, if ID got any kills
-      KDList:AddLine(Clear_Names[tostring(v)],tonumber(KilledByYou),tonumber(KilledYou)) -- Print out data
+      KDList:AddLine(ClearNames[tostring(v)],tonumber(KilledByYou),tonumber(KilledYou)) -- Print out data
       TotalKills = TotalKills + tonumber(KilledByYou)
       TotalDeaths = TotalDeaths + tonumber(KilledYou)
     end
@@ -66,5 +74,5 @@ function StatisticsDrawPlayerKD(visible)
 end
 
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_PlayerKD", function()
-  AddYourStatisticsAddon("Show Player-Kills/Deaths", StatisticsDrawPlayerKD )
+  AddYourStatisticsAddon("Show Player-Kills/Deaths", StatisticsDrawPlayerKD, 1 )
 end)
