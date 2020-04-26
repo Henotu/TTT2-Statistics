@@ -37,6 +37,7 @@ Thanks to https://github.com/glua/Royal-Derma-Designer for making it possible to
 
 local TotalAddons = {}
 local ButtonOrder = {}
+local TotalAddonsOrdered = {}
 
 surface.CreateFont("StatisticsDefault", {
   font = "Default",
@@ -57,17 +58,35 @@ surface.CreateFont("StatisticsHudHint", {
 function AddYourStatisticsAddon(ButtonName, FunctionName, Number)
   TotalAddons[ButtonName] = FunctionName
   if Number ~= nil then
-    ButtonOrder[ButtonName] = Number
+    ButtonOrder[Number] = ButtonName
   end
 end
---[[
-local function OrderButtons(Table)
-  for k, v in pairs(table.GetKeys(Table)) do
-    for n, p in pairs(table.SortByKey(ButtonOrder, true)) do
-      TotalAddons[p] = v
+
+local function OrderButtons()
+  TotalAddonsOrdered = {}
+  local Number
+  local TempList = table.GetKeys(TotalAddons)
+  for k,v in pairs(ButtonOrder) do
+    TotalAddonsOrdered[k] = ButtonOrder[k]
+    Number = k
+  end
+  for n, p in pairs(TempList) do
+    local o = 1
+    Number = Number + 1
+    local testing = false
+    while o <= #TotalAddonsOrdered do
+      if TotalAddonsOrdered[o] == p then
+        testing = true
+        break
+      end
+      o = o + 1
+    end
+    if testing == false then
+      TotalAddonsOrdered[Number] = p
     end
   end
-end]]
+  PrintTable(TotalAddonsOrdered) --TEMP
+end
 
 -- Removes all Data from the gmod DB
 local function DeleteAllEntries()
@@ -192,6 +211,7 @@ end
 --
 
 function DrawStatisticsGUI()
+  OrderButtons()
   local MainFrame = vgui.Create("DFrame")
   MainFrame:SetPos( 0.25 * ScrW(), 0.25 * ScrH() )
   MainFrame:SetSize( 0.5 * ScrW(), 0.5 * ScrH() )
@@ -208,14 +228,6 @@ function DrawStatisticsGUI()
     surface.DrawRect(0 , 0 , AddonPanel:GetWide() , AddonPanel:GetTall() )
   end
   hook.Run("StatisticsDrawGui", AddonPanel)
-
-  --Get the amount of Addons to display
-  local TotalAddonsString = ""
-  for k, v in pairs(table.GetKeys(TotalAddons)) do
-    TotalAddonsString = TotalAddonsString .. v .. "\n"
-  end
-
-  local TotalAddonsSplit = string.Split(TotalAddonsString, "\n")
 
   --make a panel for unlimited Buttons
   local ScrollPanel = vgui.Create("DScrollPanel", MainFrame)
@@ -253,13 +265,13 @@ function DrawStatisticsGUI()
   MainLabel:SetFont("StatisticsHudHint")
   MainLabel:SetTextColor(Color(255,255,255))
   MainLabel:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
-
   --Create Buttons
-  for k , v in pairs(TotalAddonsSplit) do
+  for k , v in pairs(TotalAddonsOrdered) do --
+    print(type(TotalAddonsOrdered[k])) --TEMP
     StatisticsButtonPressed = ""
     if v ~= "" then
       local SideButtons = vgui.Create("DButton", ScrollPanel)
-      SideButtons:SetText(v)
+      SideButtons:SetText(TotalAddonsOrdered[k])
       SideButtons:SetSize(ScrollPanel:GetWide(), (ScrollPanel:GetTall() - 30) / (4))
       function SideButtons:Paint(w ,h )
         draw.RoundedBox(5, 0, 0, w, h, Color(253, 251, 252))
@@ -268,18 +280,19 @@ function DrawStatisticsGUI()
       SideButtons:Dock(TOP)
       SideButtons:DockMargin(0,0,0,10)
       SideButtons.DoClick = function()
-        for _, p in pairs(TotalAddonsSplit) do
-          if (p == v) and (v ~= StatisticsButtonPressed) then
-            print(v .. "  v") --TEMP
-            TotalAddons[v](true)
+        for _, p in pairs(table.GetKeys(TotalAddons)) do
+          local ButtonName = TotalAddonsOrdered[k]
+          print(ButtonName .. "and" .. p) --TEMP
+          if (p == ButtonName) and (v ~= StatisticsButtonPressed) then
+            print("lol") --TEMP
+            TotalAddons[ButtonName](true)
             DrawMenu(SettingsButton, MainLabel, false)
-            StatisticsButtonPressed = v
-          elseif (p == v) and (v == StatisticsButtonPressed) then
+            StatisticsButtonPressed = ButtonName
+          elseif (p == ButtonName) and (v == ButtonName) then
             DrawMenu(SettingsButton, MainLabel, true)
             StatisticsButtonPressed = ""
           else
             if p ~= "" then
-              print(p .. "  p") --TEMP
               TotalAddons[p](false)
             end
           end
