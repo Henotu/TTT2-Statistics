@@ -85,7 +85,6 @@ local function OrderButtons()
       TotalAddonsOrdered[Number] = p
     end
   end
-  PrintTable(TotalAddonsOrdered) --TEMP
 end
 
 -- Removes all Data from the gmod DB
@@ -267,7 +266,6 @@ function DrawStatisticsGUI()
   MainLabel:SetText("Welcome to the TTT2-Statistics-Addon!\n\nThis Addon is intended for the TTT2 gamemode, but I think it could also be \nused for the normal TTT gamemode and/or other gamemodes. \n(It should still track your kills/deaths)\n\nEverything the Addon tracks is stored on the client-side, the server is only \nused for sending the player the information needed.\n\nIf you want to stop the recording of new data, delete all entries in the \nDatabase or change other settings, click the button below. \n\nHave fun!")
   --Create Buttons
   for k , v in pairs(TotalAddonsOrdered) do --
-    print(type(TotalAddonsOrdered[k])) --TEMP
     StatisticsButtonPressed = ""
     if v ~= "" then
       local SideButtons = vgui.Create("DButton", ScrollPanel)
@@ -282,9 +280,7 @@ function DrawStatisticsGUI()
       SideButtons.DoClick = function()
         for _, p in pairs(table.GetKeys(TotalAddons)) do
           local ButtonName = TotalAddonsOrdered[k]
-          print(ButtonName .. "and" .. p) --TEMP
           if (p == ButtonName) and (v ~= StatisticsButtonPressed) then
-            print("lol") --TEMP
             TotalAddons[ButtonName](true)
             DrawMenu(SettingsButton, MainLabel, false)
             StatisticsButtonPressed = ButtonName
@@ -308,6 +304,6 @@ end
 concommand.Add("stat_DrawGui", DrawStatisticsGUI)
 
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon" ,function()
-  bind.Register("ttt_Statistics_Addon", DrawStatisticsGUI , nil, nil, "Show Statistics") --TEMPORARY LINE: NEEDS EDIT
+  bind.Register("ttt_Statistics_Addon", DrawStatisticsGUI , nil, nil, "Show Statistics")
   AddTTT2AddonDev("76561198143340527")
 end)
