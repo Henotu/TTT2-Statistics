@@ -11,49 +11,57 @@ net.Receive("ttt_Statistics_Addon_Milestone", function()
   stat_EndRoundText = stat_EndRoundText .. text .. "\n"
 end)
 
---From here on everything is for sending data to the client
-function stat_SendMessage_ent(Name, ent)
-  util.AddNetworkString(Name)
-  net.Start(Name)
-  net.WriteEntity(ent)
-  net.Broadcast()
-end
+util.AddNetworkString("stat_Attaker")
+util.AddNetworkString("stat_Victim")
+util.AddNetworkString("stat_Player")
+util.AddNetworkString("stat_Hurt")
+util.AddNetworkString("stat_Damage")
+util.AddNetworkString("stat_GotHurt")
+util.AddNetworkString("stat_DamageRecieved")
 
-function stat_SendMessage_str(Name, str)
+local function SendMessageStr(Name, str)
   util.AddNetworkString(Name)
   net.Start(Name)
   net.WriteString(str)
   net.Broadcast()
 end
 
-function stat_SendMessage_flt(Name, flt)
-  util.AddNetworkString(Name)
-  net.Start(Name)
-  net.WriteFloat(flt)
-  net.Broadcast()
-end
-
 hook.Add("PlayerDeath", "ttt_Statistics_Addon", function(victim, inflictor, attaker)
- if attaker and victim ~= nil then
-        stat_SendMessage_ent("stat_Attaker", attaker)
-        stat_SendMessage_ent("stat_Victim", victim)
+  if attaker and victim ~= nil then
+    net.Start("stat_Attaker")
+    net.WriteEntity(attaker)
+    net.Broadcast()
+
+    net.Start("stat_Victim")
+    net.WriteEntity(victim)
+    net.Broadcast()
   end
 end)
 
 hook.Add("TTTBodyFound", "ttt_Statistics_Addon", function(player, x, xx)
-  stat_SendMessage_ent("stat_Player", player)
+  net.Start("stat_Player")
+  net.Send(player)
 end)
 
 hook.Add("PlayerHurt", "ttt_Statistics_Addon", function(player, entity, remain, dealt)
-  stat_SendMessage_ent("stat_Hurt", entity)
-  stat_SendMessage_flt("stat_Damage", dealt)
-  stat_SendMessage_ent("stat_GotHurt", player)
-  stat_SendMessage_flt("stat_DamageRecieved", dealt)
-
+  if entity:IsPlayer() then
+    net.Start("stat_Hurt")
+    net.Send(entity)
+    net.Start("stat_Damage")
+    net.WriteFloat(dealt)
+    net.Send(entity)
+  end
+  if player:IsPlayer() then
+    net.Start("stat_GotHurt")
+    net.Send(player)
+    net.Start("stat_DamageRecieved")
+    net.WriteFloat(dealt)
+    net.Send(player)
+  end
 end)
 
 hook.Add("TTTEndRound", "ttt_Statistics_Addon2", function(result)
-  stat_SendMessage_str("stat_result", result)
+  SendMessageStr("stat_result", result)
   if (stat_EndRoundText ~= "") and (GetConVar("stat_ShowMilestones"):GetBool()) then
     PrintMessage(3,stat_EndRoundText)
   end
