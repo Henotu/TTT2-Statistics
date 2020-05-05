@@ -89,6 +89,16 @@ function StatisticsDrawGameStats(visible)
   Label:SetText(Text)
 end
 
-hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_GameStats", function()
-  AddYourStatisticsAddon("Your Game-stats", StatisticsDrawGameStats, 2)
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_GameStats", function()
+  local PDEntries = {"stat_NoOneHurt", "stat_YouKilledYourself",
+  "stat_KilledByWorld", "stat_UnknownDeath", "stat_TotalDamageDealt",
+  "stat_TotalDamageReceived", "stat_TotalWeapons"}
+  local read = LocalPlayer():GetPData("stat_TotalWeapons", "")
+  local split = string.Split(read, "\n")
+  for k , v in pairs(split) do
+    if v ~= "" then
+      table.insert(PDEntries, "stat_Weapon_" .. v)
+    end
+  end
+  AddYourStatisticsAddon("Your Game-stats", StatisticsDrawGameStats, PDEntries, 2)
 end)

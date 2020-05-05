@@ -80,15 +80,23 @@ function StatisticsDrawTTTItem(visible)
       TotalItems = TotalItems + LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0) -- Counting total items
     end
     if ( k % 2 == 0) and (v ~= "") then -- If the Realname exists, write it
-      ItemList:AddLine(v, LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0))
+      ItemList:AddLine(v, tonumber(LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0)))
     elseif ( k % 2 == 0) and (v == "") and (IDName ~= nil) then -- If the Realname doesnt exists
-      ItemList:AddLine(IDName, LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0))
+      ItemList:AddLine(IDName, tonumber(LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0)))
       IDName = nil
     end
   end
   ItemLabel:SetText("Total Items Bought: " .. TotalItems .. "\n\n----------------------\n\nNote:\nYou can edit the \ndisplayed name of the item \nby right-clicking on it")
 end
 
-hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_TTTItem", function()
-  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItem, 4)
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_TTTItem", function()
+  local ReadItem = LocalPlayer():GetPData("stat_ItemBought", "")
+  local SplitItem = string.Split(ReadItem, "\n")
+  local PDEntries = {"stat_ItemBought"}
+  for k, v in pairs(SplitItem) do -- go through every Line of the string
+    if ( k % 2 ~= 0) and (v ~= "") then -- Get the ID of the Item
+      table.insert(PDEntries, v .. "_BoughtByPlayer")
+    end
+  end
+  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItem, PDEntries, 4)
 end)

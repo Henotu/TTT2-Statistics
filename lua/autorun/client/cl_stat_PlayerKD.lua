@@ -37,7 +37,7 @@ end
 local function TotalKills()
   local TotalKills = 0 -- Both Variables are used later
   local TotalDeaths = 0
-  for k, v in pairs(IDList) do --get every ID from the ID_list
+  for k, v in pairs(IDList) do --get every ID from the IDList
     local KilledYou = LocalPlayer():GetPData(v .."_KilledYou", 0) --get the value of kills of current id
     local KilledByYou = LocalPlayer():GetPData(v .. "_KilledByYou", 0)
     if (KilledYou ~= nil) and (KilledByYou ~= nil) then --Test, if ID got any kills
@@ -73,6 +73,17 @@ function StatisticsDrawPlayerKD(visible)
   KDLabel:SetText("Number of kills: \n" .. TotalKills .. "\n\nNumber of deaths by players: \n" .. TotalDeaths .. "\n\nK/D (only Players): " .. roundTo2Decimal(TotalKills / TotalDeaths))
 end
 
-hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_PlayerKD", function()
-  AddYourStatisticsAddon("Show Player-Kills/Deaths", StatisticsDrawPlayerKD, 1 )
+--[[
+hook.Add("TTTScoreboardMenu", "ttt_Statistics_Addon", function()
+  pnl:AddColumn("ID", function(ply) return ply:UserID() end)
+end)]]
+
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_PlayerKD", function()
+  local PDEntries = {"stat_NameDataBase"}
+  GetIDNamesFromDB()
+  for k, v in pairs(IDList) do
+    table.insert(PDEntries, v .. "_KilledYou")
+    table.insert(PDEntries, v .. "_KilledByYou")
+  end
+  AddYourStatisticsAddon("Show Player-Kills/Deaths", StatisticsDrawPlayerKD, PDEntries, 1)
 end)

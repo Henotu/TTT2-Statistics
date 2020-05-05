@@ -12,18 +12,10 @@ hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_record" ,function()
 	end
 end)
 
---Fixes Bugs from V 0.99
-hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_record" ,function()
-	if (tonumber(LocalPlayer():GetPData("stat_Bugfix0_99", 0)) ~= 1) then
-		LocalPlayer():RemovePData("stat_TotalRoles")
-		GetConVar("stat_Record"):SetBool(true)
-		LocalPlayer():SetPData("stat_Bugfix0_99", 1)
-	end
-end)
-
 local TShopExists = false
 local Playerhurt = false
 local RoundActive = false
+local TimeAlive
 
 local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
 	for k ,v in pairs(tbl) do
@@ -147,50 +139,46 @@ net.Receive("stat_Attaker",function() --Receive the attaker entity by server
 				StatisticsUpdatePData("stat_UnknownDeath")
 			end
 		end
+		if (victim == LocalPlayer()) and (GetConVar("stat_Record"):GetBool()) and (TimeAlive ~= 0) then
+			StatisticsUpdatePData("stat_TimeSurvivedCount")
+			LocalPlayer():SetPData("stat_TimeSurvivedTotal", LocalPlayer():GetPData("stat_TimeSurvivedTotal", 0) + (SysTime() - TimeAlive))
+			TimeAlive = 0
+		end
 	end)
 end)
 
 -- When the player finds a unidentified body
 net.Receive("stat_Player", function()
-	local player = net.ReadEntity()
-	if player == LocalPlayer() then
-		StatisticsUpdatePData("stat_TotalPlayersFound")
-	end
+	StatisticsUpdatePData("stat_TotalPlayersFound")
 end)
 
 -- Updates Playerhurt when the player hurts someone; Update the Damage caused by the player
 net.Receive("stat_Hurt", function()
-	local entity = net.ReadEntity()
-	if entity == LocalPlayer() then
-		Playerhurt = true
-		net.Receive("stat_Damage", function()
-			local damage = net.ReadFloat()
-			local max = GetConVar("stat_MaxDamage"):GetInt()
-			if damage > max then
-				damage = max -- Set the max damage defined by ConVar
-			end
-			if GetConVar("stat_Record"):GetBool() and (RoundActive) then
-				LocalPlayer():SetPData("stat_TotalDamageDealt", LocalPlayer():GetPData("stat_TotalDamageDealt", 0) + damage)
-			end
-		end)
-	end
+	Playerhurt = true
+	net.Receive("stat_Damage", function()
+		local damage = net.ReadFloat()
+		local max = GetConVar("stat_MaxDamage"):GetInt()
+		if damage > max then
+			damage = max -- Set the max damage defined by ConVar
+		end
+		if GetConVar("stat_Record"):GetBool() and (RoundActive) then
+			LocalPlayer():SetPData("stat_TotalDamageDealt", LocalPlayer():GetPData("stat_TotalDamageDealt", 0) + damage)
+		end
+	end)
 end)
 
 -- Update the Damage received by the player
 net.Receive("stat_GotHurt", function()
-	local entity = net.ReadEntity()
-	if entity == LocalPlayer() then
-		net.Receive("stat_DamageRecieved", function()
-			local damage = net.ReadFloat()
-			local max = GetConVar("stat_MaxDamage"):GetInt()
-			if damage > max then
-				damage = max -- Set the max damage defined by ConVar
-			end
-			if GetConVar("stat_Record"):GetBool() and (RoundActive) then
-				LocalPlayer():SetPData("stat_TotalDamageReceived", LocalPlayer():GetPData("stat_TotalDamageReceived", 0) + damage)
-			end
-		end)
-	end
+	net.Receive("stat_DamageRecieved", function()
+		local damage = net.ReadFloat()
+		local max = GetConVar("stat_MaxDamage"):GetInt()
+		if damage > max then
+			damage = max -- Set the max damage defined by ConVar
+		end
+		if GetConVar("stat_Record"):GetBool() and (RoundActive) then
+			LocalPlayer():SetPData("stat_TotalDamageReceived", LocalPlayer():GetPData("stat_TotalDamageReceived", 0) + damage)
+		end
+	end)
 end)
 
 --Update the Rounds Won/Lost
@@ -200,6 +188,15 @@ net.Receive("stat_result", function()
 		StatisticsUpdatePData("stat_RoundsWon")
 	else
 		StatisticsUpdatePData("stat_RoundsLost")
+	end
+end)
+
+--Fixes Bugs from V 0.99
+hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_record" ,function()
+	if (tonumber(LocalPlayer():GetPData("stat_Bugfix0_99", 0)) ~= 1) then
+		LocalPlayer():RemovePData("stat_TotalRoles")
+		GetConVar("stat_Record"):SetBool(true)
+		LocalPlayer():SetPData("stat_Bugfix0_99", 1)
 	end
 end)
 
@@ -222,6 +219,7 @@ end)
 hook.Add("TTTBeginRound", "ttt_Statistics_Addon", function()
 	RoundActive = true
 	Playerhurt = false
+	TimeAlive = SysTime()
 	local Rolename = "stat_TimesYouWere_" .. LocalPlayer():GetRoleString()
 	local TotalRolesString = LocalPlayer():GetPData("stat_TotalRoles", "")
 	local TotalRolesTable = string.Split(TotalRolesString, "\n")
@@ -251,6 +249,11 @@ hook.Add("TTTEndRound", "ttt_Statistics_Addon", function()
 	if (not Playerhurt) then
 		StatisticsUpdatePData("stat_NoOneHurt")
 	end
+	if (TimeAlive ~= 0) and (GetConVar("stat_Record"):GetBool()) then
+		LocalPlayer():SetPData("stat_TimeSurvivedCount", LocalPlayer():GetPData("stat_TimeSurvivedCount", 0)+1)
+		LocalPlayer():SetPData("stat_TimeSurvivedTotal", tonumber(LocalPlayer():GetPData("stat_TimeSurvivedTotal", 0)) + (SysTime() - TimeAlive))
+		TimeAlive = 0
+	end
 end)
 
 -- Update TShopExists when the T-shop gets opened/closed
@@ -263,13 +266,11 @@ end)
 
 --Records if someone types "!rdm [PLAYERNAME]" in Chat; Part of a easteregg for r/Arrrrr
 hook.Add("OnPlayerChat", "ttt_Statistics_Addon", function(ply, Text)
-	if ply ~= LocalPlayer() then
+	if ply == LocalPlayer() then
 		local LowerText = string.lower(Text)
-		local SearchText = string.lower("!rdm" .. LocalPlayer():GetName())
-		print(string.find(LowerText, SearchText))
+		local SearchText = string.lower("!rdm " .. LocalPlayer():GetName())
 		if ((string.find(LowerText, SearchText)) ~= nil) then
 			StatisticsUpdatePData("stat_Rdm")
-			print("!rdm")
 		end
 	end
 end)

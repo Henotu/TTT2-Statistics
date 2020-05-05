@@ -38,6 +38,7 @@ Thanks to https://github.com/glua/Royal-Derma-Designer for making it possible to
 local TotalAddons = {}
 local ButtonOrder = {}
 local TotalAddonsOrdered = {}
+local PDEntries = {}
 
 surface.CreateFont("StatisticsDefault", {
   font = "Default",
@@ -55,10 +56,13 @@ surface.CreateFont("StatisticsHudHint", {
   blursize = 0})
 
 --Adds all addons to addon-table
-function AddYourStatisticsAddon(ButtonName, FunctionName, Number)
+function AddYourStatisticsAddon(ButtonName, FunctionName, Table, Number)
   TotalAddons[ButtonName] = FunctionName
   if Number ~= nil then
     ButtonOrder[Number] = ButtonName
+  end
+  if Table ~= nil then
+    table.Add(PDEntries, Table)
   end
 end
 
@@ -89,53 +93,67 @@ end
 
 -- Removes all Data from the gmod DB
 local function DeleteAllEntries()
-  local NameString = LocalPlayer():GetPData("stat_NameDataBase", "")
-  local NameSplit = string.Split(NameString, "\n")
-  local ItemString = LocalPlayer():GetPData("stat_ItemBought", "")
-  local ItemSplit = string.Split(ItemString, "\n")
-  local TotalRolesString = LocalPlayer():GetPData("stat_TotalRoles", "")
-  local TotalRolesSplit = string.Split(TotalRolesString, "\n")
-  local WeaponRead = LocalPlayer():GetPData("stat_NameDataBase", "")
-  local WeaponSplit = string.Split("WeaponRead", "\n")
-  -- Delete Entries for Items
-  for k, v in pairs(ItemSplit) do
-    if (k % 2 ~= 0) then
-      LocalPlayer():RemovePData(v .. "_BoughtByPlayer")
+  for k,v in pairs(PDEntries) do
+    LocalPlayer():RemovePData(v)
+  end
+end
+
+local function DrawDeveloperWindow(Entry)
+  local frame = vgui.Create("DFrame")
+  frame:SetPos( 0.21302083333333 * ScrW(), 0.23981481481481 * ScrH() )
+  frame:SetSize( 0.6 * ScrW(), 0.36574074074074 * ScrH() )
+  frame:MakePopup()
+
+   local TextEntryList = vgui.Create( "DTextEntry", frame )
+    TextEntryList:SetPos( 0.01641266119578 * frame:GetWide(), 0.85822784810127 * frame:GetTall() )
+  	TextEntryList:SetSize( 0.27549824150059 * frame:GetWide(), 0.091139240506329 * frame:GetTall() )
+    TextEntryList.OnEnter = function()
+      DrawDeveloperWindow(TextEntryList:GetValue())
+      frame:Remove()
     end
-  end
-  -- Delete Entries for Names and ID
-  for k, v in pairs(NameSplit) do
-    if (k % 2 ~= 0) then
-      LocalPlayer():RemovePData(v .. "_KilledYou")
-      LocalPlayer():RemovePData(v .. "_KilledByYou")
+
+   local ListView = vgui.Create( "DListView", frame )
+  	ListView:SetPos( 0.01641266119578 * frame:GetWide(), 0.09873417721519 * frame:GetTall() )
+  	ListView:SetSize( 0.27549824150059 * frame:GetWide(), 0.73164556962025 * frame:GetTall() )
+    ListView:AddColumn("Entry")
+    ListView.OnRowSelected = function(notused, self)
+      DrawDeveloperWindow(ListView:GetLine(self):GetColumnText(1))
+      frame:Remove()
     end
-  end
-  --Delete Entries for Roles
-  for k, v in pairs(TotalRolesSplit) do
-    LocalPlayer():RemovePData("stat_TimesYouWere_" .. v)
-  end
-  --Delete Entries for Weapons
-  for k , v in pairs(WeaponSplit) do
-    LocalPlayer():RemovePData("stat_Weapon_" .. v)
-  end
 
-  LocalPlayer():RemovePData("stat_NoOneHurt")
-  LocalPlayer():RemovePData("stat_YouKilledYourself")
-  LocalPlayer():RemovePData("stat_KilledByWorld")
-  LocalPlayer():RemovePData("stat_UnknownDeath")
-  LocalPlayer():RemovePData("stat_TotalDamageDealt")
-  LocalPlayer():RemovePData("stat_TotalDamageReceived")
+    local MainLabel = vgui.Create("DLabel", frame)
+  	MainLabel:SetPos( 0.31770222743259 * frame:GetWide(), 0.09873417721519 * frame:GetTall() )
+  	MainLabel:SetSize( 0.63892145369285 * frame:GetWide(), 0.35696202531646 * frame:GetTall() )
+    MainLabel:SetFont("StatisticsHudHint")
+    MainLabel:SetTextColor(Color(255, 255, 255))
+    MainLabel:SetText("Select an Entry to continue")
 
-  LocalPlayer():RemovePData("stat_TotalPlayersFound")
-  LocalPlayer():RemovePData("stat_DeathWhileShopping")
-  LocalPlayer():RemovePData("stat_RoundsPlayed")
-  LocalPlayer():RemovePData("stat_RoundsWon")
-  LocalPlayer():RemovePData("stat_RoundsLost")
+   local TextEntryInt = vgui.Create( "DTextEntry", frame )
+  	TextEntryInt:SetPos( 0.81125439624853 * frame:GetWide(), 0.49367088607595 * frame:GetTall() )
+  	TextEntryInt:SetSize( 0.14536928487691 * frame:GetWide(), 0.093670886075949 * frame:GetTall() )
+    TextEntryInt.OnEnter = function()
+      if (Entry ~= nil) and (Entry ~= "") then
+        LocalPlayer():SetPData(Entry, TextEntryInt:GetValue())
+        DrawDeveloperWindow(Entry)
+        frame:Remove()
+      end
+    end
 
-  LocalPlayer():RemovePData("stat_TotalWeapons")
-  LocalPlayer():RemovePData("stat_TotalRoles")
-  LocalPlayer():RemovePData("stat_NameDataBase")
-  LocalPlayer():RemovePData("stat_ItemBought")
+   local SideLabel = vgui.Create( "DLabel", frame )
+  	SideLabel:SetPos( 0.31770222743259 * frame:GetWide(), 0.49367088607595 * frame:GetTall() )
+  	SideLabel:SetSize( 0.44548651817116 * frame:GetWide(), 0.093670886075949 * frame:GetTall() )
+    SideLabel:SetFont("StatisticsHudHint")
+    SideLabel:SetTextColor(Color(255,255,255))
+    SideLabel:SetText("")
+
+    for k,v in pairs(PDEntries) do
+      ListView:AddLine(v)
+    end
+    if Entry ~= nil then
+      TextEntryList:SetText(Entry)
+      MainLabel:SetText("\"" .. Entry .. "\" " .."has a total value of " .. LocalPlayer():GetPData(Entry, 0))
+      SideLabel:SetText("Set the new value of \"".. Entry .."\": ")
+    end
 end
 
 --Draws the Setting-Window
@@ -143,7 +161,7 @@ local function DrawSettingsWindow()
   local frame = vgui.Create("DFrame")
   frame:SetPos( 0.32760416666667 * ScrW(), 0.35185185185185 * ScrH() )
   frame:SetSize( 0.22760416666667 * ScrW(), 0.21666666666667 * ScrH() )
-  frame:SetTitle("Settings - Version 1.0.1")
+  frame:SetTitle("Settings - Version 1.1.1")
   frame:MakePopup()
 
 
@@ -184,6 +202,8 @@ local function DrawSettingsWindow()
       DeleteAllEntries()
     elseif e:GetValue() == "Alex.exe" then
       GetConVar("stat_Alex"):SetBool(not GetConVar("stat_Alex"):GetBool())
+    elseif e:GetValue() == "DEVELOPER" then
+      DrawDeveloperWindow()
     end
   end
 
