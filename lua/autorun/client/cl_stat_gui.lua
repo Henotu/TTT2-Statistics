@@ -323,12 +323,10 @@ end
 
 concommand.Add("stat_DrawGui", DrawStatisticsGUI)
 
-<<<<<<< HEAD
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon_gui" ,function()
   bind.Register("ttt_Statistics_Addon", stat_DrawGui , nil, nil, "Show Statistics") --TEMPORARY LINE: NEEDS EDIT
-=======
+end)
 hook.Add("TTT2FinishedLoading", "ttt_Statistics_Addon" ,function()
   bind.Register("ttt_Statistics_Addon", DrawStatisticsGUI , nil, nil, "Show Statistics")
->>>>>>> New-Gui
   AddTTT2AddonDev("76561198143340527")
 end)

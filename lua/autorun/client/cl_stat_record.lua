@@ -15,7 +15,7 @@ end)
 local TShopExists = false
 local Playerhurt = false
 local RoundActive = false
-local TimeAlive
+local TimeAlive = 0
 
 local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
 	for k ,v in pairs(tbl) do

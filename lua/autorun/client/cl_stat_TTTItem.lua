@@ -51,7 +51,7 @@ local function RunWindow(notused, self)
 hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon_TTTItem", function(panel)
   ItemList = vgui.Create("DListView", panel)
   ItemList:SetPos( 0,0)
-  ItemList:SetSize( 0.7450811304596 * panel:GetWide(), panel:GetTall() )
+  ItemList:SetSize( 0.7450811304596 * panel:GetWide(), 0.9 * panel:GetTall() )
   ItemList:AddColumn("Name of the item")
   ItemList:AddColumn("Times bought")
   ItemList.OnRowRightClick = function(notused, self)
@@ -64,17 +64,38 @@ hook.Add("StatisticsDrawGui", "ttt_Statistics_Addon_TTTItem", function(panel)
   ItemLabel:SetFont("StatisticsDefault")
   ItemLabel:SetTextColor(Color(255,255,255))
 
+  ItemSearch = vgui.Create("DTextEntry", panel)
+  ItemSearch:SetPos(0, 0.9 * panel:GetTall())
+  ItemSearch:SetSize(0.7450811304596 * panel:GetWide(), 0.1 * panel:GetTall())
+  ItemSearch:SetPlaceholderText("Search...")
+  ItemSearch.OnChange = function()
+    StatisticsDrawTTTItemSearch(true, ItemSearch:GetValue())
+  end
 end)
 
-function StatisticsDrawTTTItem(visible)
+function StatisticsDrawTTTItemSearch(visible, text)
+  ItemSearch:SetVisible(visible)
   ItemList:SetVisible(visible)
   ItemLabel:SetVisible(visible)
   local ReadItem = LocalPlayer():GetPData("stat_ItemBought", "")
   local SplitItem = string.Split(ReadItem, "\n")
+  local SortedList = {}
   local IDName
+  local temp = ""
   local TotalItems = 0
   ItemList:Clear()
-  for k, v in pairs(SplitItem) do -- go through every Line of the string
+  if text ~= nil then
+    for n, l in pairs(SplitItem) do
+      if ((string.find(string.lower(l), string.lower(text)) ~= nil) or (string.find(string.lower(temp), string.lower(text))) ~= nil) and (n % 2 == 0) then
+      table.insert(SortedList, temp)
+      table.insert(SortedList, l)
+      end
+      temp = l
+    end
+  else
+    SortedList = SplitItem
+  end
+  for k, v in pairs(SortedList) do -- go through every Line of the string
     if ( k % 2 ~= 0) and (v ~= "") then -- Get the ID of the Item
       IDName = v
       TotalItems = TotalItems + LocalPlayer():GetPData(IDName .. "_BoughtByPlayer", 0) -- Counting total items
@@ -86,7 +107,9 @@ function StatisticsDrawTTTItem(visible)
       IDName = nil
     end
   end
-  ItemLabel:SetText("Total Items Bought: " .. TotalItems .. "\n\n----------------------\n\nNote:\nYou can edit the \ndisplayed name of the item \nby right-clicking on it")
+  if text == nil then
+    ItemLabel:SetText("Total Items Bought: " .. TotalItems .. "\n\n----------------------\n\nNote:\nYou can edit the \ndisplayed name of the item \nby right-clicking on it")
+  end
 end
 
 hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_TTTItem", function()
@@ -98,5 +121,5 @@ hook.Add("TTT2PlayerReady", "ttt_Statistics_Addon_TTTItem", function()
       table.insert(PDEntries, v .. "_BoughtByPlayer")
     end
   end
-  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItem, PDEntries, 4)
+  AddYourStatisticsAddon("TTT Item-stats", StatisticsDrawTTTItemSearch, PDEntries, 4)
 end)
