@@ -129,7 +129,7 @@ net.Receive("stat_Attaker",function() --Receive the attaker entity by server
 			FavWeapon()
 		elseif (attaker == LocalPlayer()) and (victim == LocalPlayer()) then
 			-- Suicides
-			StatisticsUpdatePData("stat_YouKilledYourself", "killed himself"," times")
+			StatisticsUpdatePData("stat_YouKilledYourself", "killed themselves"," times")
 		elseif (attaker:IsWorld()) and (victim == LocalPlayer()) then
 			-- Deaths by world
 			StatisticsUpdatePData("stat_KilledByWorld")
@@ -238,7 +238,7 @@ hook.Add("TTTBeginRound", "ttt_Statistics_Addon", function()
 	-- Update the times the player was the role
 	StatisticsUpdatePData(Rolename)
 	--How many times the LocalPlayer() started rounds:
-	StatisticsUpdatePData("stat_RoundsPlayed", "played his/her", "th round")
+	StatisticsUpdatePData("stat_RoundsPlayed", "played their", "th round")
 end)
 
 
