@@ -63,7 +63,8 @@ end)
 hook.Add("TTTEndRound", "ttt_Statistics_Addon2", function(result)
   SendMessageStr("stat_result", result)
   if (stat_EndRoundText ~= "") and (GetConVar("stat_ShowMilestones"):GetBool()) then
-    PrintMessage(3,stat_EndRoundText)
+    PrintMessage(3, string.sub(
+      stat_EndRoundText, 0, string.len(stat_EndRoundText) - string.len("\n")))
   end
     stat_EndRoundText = ""
 end)
