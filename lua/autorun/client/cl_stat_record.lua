@@ -18,6 +18,9 @@ local RoundActive = false
 local TimeAlive = 0
 
 local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
+	if nmb % 500 == 0 then
+		return true
+	end
 	for k ,v in pairs(tbl) do
 		if v == tonumber(nmb) then
 			return true
@@ -30,7 +33,7 @@ function StatisticsUpdatePData(Name, event1, event2) -- Increases the given Entr
 	if (GetConVar("stat_Record"):GetBool()) and (RoundActive) then
 		LocalPlayer():SetPData(Name, LocalPlayer():GetPData(Name, 0) +1)
 	end
-	local numbers = {20, 50, 100, 200, 500, 1000, 1500, 2000, 2500, 3000}
+	local numbers = {20, 50, 100, 200}
 	local nmb = LocalPlayer():GetPData(Name, 0)
 	if (event1 ~= nil) and (stat_HasNumber(numbers, nmb)) then
 		net.Start("ttt_Statistics_Addon_Milestone")
