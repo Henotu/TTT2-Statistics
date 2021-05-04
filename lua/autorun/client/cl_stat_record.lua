@@ -18,7 +18,7 @@ local RoundActive = false
 local TimeAlive = 0
 
 local function stat_HasNumber(tbl, nmb) -- Checks if a table has a given value
-	if (nmb % 500 == 0 and nmb >= 500) then
+	if (tonumber(nmb) % 500 == 0 and tonumber(nmb) >= 500) then
 		return true
 	end
 	for k ,v in pairs(tbl) do
