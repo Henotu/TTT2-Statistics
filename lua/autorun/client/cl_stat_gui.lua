@@ -91,6 +91,24 @@ local function OrderButtons()
   end
 end
 
+-- Saves all Data from the gmod DB inside a .json file
+local function SaveAllEntries()
+  local values = {}
+
+  for k,v in pairs(PDEntries) do
+    values[v] = LocalPlayer():GetPData(v, 0)
+  end
+
+  local data = util.TableToJSON(values, true)
+
+  if (!file.IsDir("ttt_Statistics_Addon", "DATA")) then
+    file.CreateDir("ttt_Statistics_Addon")
+  end
+
+  local filename = "Export_" .. string.Replace( util.DateStamp(), " ", "_") .. ".json"
+  file.Write("ttt_Statistics_Addon/" .. filename, data)
+end
+
 -- Removes all Data from the gmod DB
 local function DeleteAllEntries()
   for k,v in pairs(PDEntries) do
