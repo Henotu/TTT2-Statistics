@@ -109,6 +109,20 @@ local function SaveAllEntries()
   file.Write("ttt_Statistics_Addon/" .. filename, data)
 end
 
+-- Loads the json data from the given file
+local function LoadAllEntries(path, name)
+  local data = file.Read(name, path)
+  local table = util.JSONToTable(data)
+  for k,v in pairs(table) do
+    local num = tonumber(v)
+    if (num ~= nil) then
+      LocalPlayer():SetPData(k, num)
+    else
+      LocalPlayer():SetPData(k, v)
+    end
+  end
+end
+
 -- Removes all Data from the gmod DB
 local function DeleteAllEntries()
   for k,v in pairs(PDEntries) do
