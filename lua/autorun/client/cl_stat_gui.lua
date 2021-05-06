@@ -105,7 +105,7 @@ local function SaveAllEntries()
     file.CreateDir("ttt_Statistics_Addon")
   end
 
-  local filename = "Export_" .. string.Replace( util.DateStamp(), " ", "_") .. ".json"
+  local filename = "Stat_Export_" .. string.Replace( util.DateStamp(), " ", "_") .. ".json"
   file.Write("ttt_Statistics_Addon/" .. filename, data)
 end
 
