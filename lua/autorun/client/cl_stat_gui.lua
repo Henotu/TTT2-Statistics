@@ -226,6 +226,53 @@ local function DrawSettingsWindow()
   e:SetFont("StatisticsDefault")
   e.DoClick = function() frame:Remove() end
 
+  // Import/Export of the json files
+
+  local import = vgui.Create("DButton", frame)
+  import:SetPos( 0.134324942791762 * frame:GetWide(), 0.5506172 * frame:GetTall() )
+  import:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
+  import:SetText("Import")
+  import:SetFont("StatisticsDefault")
+  -- Draws a file browser set in the "DATA" folder
+  import.DoClick = function() 
+    local frame = vgui.Create("DFrame")
+    frame:SetPos( 0.35760416666667 * ScrW(), 0.40185185185185 * ScrH() )
+    frame:SetSize( 0.22760416666667 * ScrW(), 0.27 * ScrH() )
+    frame:MakePopup()
+    frame:SetTitle("Select a file")
+  
+    local margin = 0.01 * frame:GetTall()
+  
+    local text = vgui.Create("DLabel", frame)
+    text:Dock(TOP)
+    text:SetText("Double-Click on a .json file to import it")
+    text:SetFont("StatisticsHudHint")
+  
+    local browser = vgui.Create( "DFileBrowser", frame)
+    browser:DockMargin(0, margin, 0, margin)
+    browser:Dock(FILL)
+    browser:SetPath("GAME")
+    browser:SetBaseFolder("data")
+    if (file.IsDir("ttt_Statistics_Addon" , "DATA")) then
+      browser:SetCurrentFolder("ttt_Statistics_Addon")
+    end
+    browser:SetOpen(true)
+  
+    function browser:OnDoubleClick(path, pnl)
+      frame:Remove()
+      PrepareImport(path)
+    end
+
+    local exit = vgui.Create("DButton", frame)
+    exit:DockMargin(margin, margin, margin, margin)
+    exit:Dock(BOTTOM)
+    exit:SetText("Exit")
+    exit.DoClick = function ()
+      frame:Remove()
+      PrepareImport(nil)
+    end
+  end
+
   local e = vgui.Create( "DTextEntry", frame )
   e:SetPos( 0.7025171624714 * frame:GetWide(), 0.707122507 * frame:GetTall() )
   e:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
