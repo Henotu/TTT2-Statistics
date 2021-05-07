@@ -91,6 +91,16 @@ local function OrderButtons()
   end
 end
 
+local function GetCheckSum(tbl)
+  local entrySum = 0
+  for k,v in pairs(tbl) do
+    if (tonumber(v) ~= nil ) then
+      entrySum = entrySum + (math.floor(tonumber(v)) % string.len(k))
+    end
+  end
+  return (entrySum % (table.Count(tbl)))
+end
+
 -- Saves all Data from the gmod DB inside a .json file
 local function SaveAllEntries()
   local values = {}
