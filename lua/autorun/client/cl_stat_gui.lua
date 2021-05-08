@@ -107,6 +107,7 @@ local function GetCheckSum(tbl)
 end
 
 -- Saves all Data from the gmod DB inside a .json file
+-- returns the save location of the file
 local function SaveAllEntries()
   local values = {}
 
@@ -123,6 +124,7 @@ local function SaveAllEntries()
 
   local filename = "Stat_Export_" .. string.Replace( util.DateStamp(), " ", "_") .. ".json"
   file.Write("ttt_Statistics_Addon/" .. filename, data)
+  return "The file was written to \ndata/ttt_Statistics_Addon/" .. filename
 end
 
 -- Loads the json data from the given file
@@ -160,10 +162,10 @@ local function DrawInfoWindow(text)
   frame:MakePopup()
 
   local label = vgui.Create("DLabel", frame)
-  label:Dock(TOP)
+  label:Dock(FILL)
   label:Center()
   label:SetText(text)
-  label:SetFont("StatisticsHudHint")
+  label:SetFont("StatisticsDefault")
 
   local button = vgui.Create("DButton", frame)
   button:DockMargin(0.2 * frame:GetWide(), 0, 0.2 * frame:GetWide(), 0.1 * frame:GetTall())
@@ -326,6 +328,15 @@ local function DrawSettingsWindow()
     exit.DoClick = function ()
       frame:Remove()
     end
+  end
+
+  local import = vgui.Create("DButton", frame)
+  import:SetPos( 0.6 * frame:GetWide(), 0.5506172 * frame:GetTall() )
+  import:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
+  import:SetText("Export")
+  import:SetFont("StatisticsDefault")
+  import.DoClick = function()
+    DrawInfoWindow(SaveAllEntries())
   end
 
   local e = vgui.Create( "DTextEntry", frame )
