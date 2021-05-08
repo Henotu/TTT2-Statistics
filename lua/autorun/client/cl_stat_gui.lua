@@ -91,14 +91,19 @@ local function OrderButtons()
   end
 end
 
+--Calculates the Checksum
 local function GetCheckSum(tbl)
   local entrySum = 0
   for k,v in pairs(tbl) do
-    if (tonumber(v) ~= nil ) then
+    if (tonumber(v) ~= nil and k ~= "Checksum") then
       entrySum = entrySum + (math.floor(tonumber(v)) % string.len(k))
     end
   end
-  return (entrySum % (table.Count(tbl)))
+  local n = table.Count(tbl)
+  if (tbl["Checksum"] ~= nil) then
+    n = n - 1
+  end
+  return (entrySum % (n))
 end
 
 -- Saves all Data from the gmod DB inside a .json file
@@ -109,6 +114,7 @@ local function SaveAllEntries()
     values[v] = LocalPlayer():GetPData(v, 0)
   end
 
+  values["Checksum"] = GetCheckSum(values)
   local data = util.TableToJSON(values, true)
 
   if (!file.IsDir("ttt_Statistics_Addon", "DATA")) then
@@ -123,11 +129,16 @@ end
 local function LoadAllEntries(path, name)
   local data = file.Read(name, path)
   local table = util.JSONToTable(data)
+  if (GetCheckSum(table) ~= table["Checksum"]) then
+    Error("The given File is invalid")
+    return
+  end
+
   for k,v in pairs(table) do
     local num = tonumber(v)
-    if (num ~= nil) then
+    if (num ~= nil and (k ~= "Checksum")) then
       LocalPlayer():SetPData(k, num)
-    else
+    elseif (k ~= "Checksum") then
       LocalPlayer():SetPData(k, v)
     end
   end
