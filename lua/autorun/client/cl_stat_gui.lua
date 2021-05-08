@@ -251,7 +251,7 @@ local function DrawSettingsWindow()
   local frame = vgui.Create("DFrame")
   frame:SetPos( 0.32760416666667 * ScrW(), 0.35185185185185 * ScrH() )
   frame:SetSize( 0.22760416666667 * ScrW(), 0.27 * ScrH() )
-  frame:SetTitle("Settings - Version 1.1.1")
+  frame:SetTitle("Settings - Version 1.2")
   frame:MakePopup()
 
 
@@ -285,6 +285,12 @@ local function DrawSettingsWindow()
   e.DoClick = function() frame:Remove() end
 
   // Import/Export of the json files
+
+  local e = vgui.Create( "DLabel", frame )
+  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.46 * frame:GetTall() )
+  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.06858710562414 * frame:GetTall() )
+  e:SetFont("StatisticsDefault")
+  e:SetText("Import/Export your current stats:")
 
   local import = vgui.Create("DButton", frame)
   import:SetPos( 0.134324942791762 * frame:GetWide(), 0.5506172 * frame:GetTall() )
