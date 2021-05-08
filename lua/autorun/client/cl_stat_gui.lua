@@ -152,19 +152,11 @@ local function DeleteAllEntries()
   end
 end
 
-local function PrepareImport(path)
-  print(path)
-  local bool = LoadAllEntries("GAME" , path)
-  local text
-  if (bool) then
-    text = "Import was successful."
-  else 
-    text = "The file was invalid"
-  end
-  local frame = vgui.Create("DFrame")
+local function DrawInfoWindow(text)
+    local frame = vgui.Create("DFrame")
   frame:SetSize(0.2 * ScrW(), 0.11 * ScrH())
   frame:Center()
-  frame:SetTitle("File Import")
+  frame:SetTitle("Information")
   frame:MakePopup()
 
   local label = vgui.Create("DLabel", frame)
@@ -180,7 +172,18 @@ local function PrepareImport(path)
   button.DoClick = function()
     frame:Remove()
   end
+end
 
+local function PrepareImport(path)
+  print(path)
+  local bool = LoadAllEntries("GAME" , path)
+  local text
+  if (bool) then
+    text = "Import was successful."
+  else 
+    text = "The file was invalid"
+  end
+  DrawInfoWindow(text)
 end
 
 local function DrawDeveloperWindow(Entry)
