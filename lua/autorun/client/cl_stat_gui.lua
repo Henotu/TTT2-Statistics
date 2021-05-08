@@ -132,7 +132,7 @@ local function LoadAllEntries(path, name)
   print(path, name)
   local data = file.Read(name, path)
   local table = util.JSONToTable(data)
-  if (GetCheckSum(table) ~= table["Checksum"]) then
+  if ( table == nil or GetCheckSum(table) ~= table["Checksum"]) then
     return false
   end
 
