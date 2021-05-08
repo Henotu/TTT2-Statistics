@@ -127,11 +127,11 @@ end
 
 -- Loads the json data from the given file
 local function LoadAllEntries(path, name)
+  print(path, name)
   local data = file.Read(name, path)
   local table = util.JSONToTable(data)
   if (GetCheckSum(table) ~= table["Checksum"]) then
-    Error("The given File is invalid")
-    return
+    return false
   end
 
   for k,v in pairs(table) do
@@ -142,6 +142,7 @@ local function LoadAllEntries(path, name)
       LocalPlayer():SetPData(k, v)
     end
   end
+  return true
 end
 
 -- Removes all Data from the gmod DB
@@ -149,6 +150,37 @@ local function DeleteAllEntries()
   for k,v in pairs(PDEntries) do
     LocalPlayer():RemovePData(v)
   end
+end
+
+local function PrepareImport(path)
+  print(path)
+  local bool = LoadAllEntries("GAME" , path)
+  local text
+  if (bool) then
+    text = "Import was successful."
+  else 
+    text = "The file was invalid"
+  end
+  local frame = vgui.Create("DFrame")
+  frame:SetSize(0.2 * ScrW(), 0.11 * ScrH())
+  frame:Center()
+  frame:SetTitle("File Import")
+  frame:MakePopup()
+
+  local label = vgui.Create("DLabel", frame)
+  label:Dock(TOP)
+  label:Center()
+  label:SetText(text)
+  label:SetFont("StatisticsHudHint")
+
+  local button = vgui.Create("DButton", frame)
+  button:DockMargin(0.2 * frame:GetWide(), 0, 0.2 * frame:GetWide(), 0.1 * frame:GetTall())
+  button:Dock(BOTTOM)
+  button:SetText("Close")
+  button.DoClick = function()
+    frame:Remove()
+  end
+
 end
 
 local function DrawDeveloperWindow(Entry)
@@ -290,7 +322,6 @@ local function DrawSettingsWindow()
     exit:SetText("Exit")
     exit.DoClick = function ()
       frame:Remove()
-      PrepareImport(nil)
     end
   end
 
