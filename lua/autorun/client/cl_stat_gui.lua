@@ -91,11 +91,101 @@ local function OrderButtons()
   end
 end
 
+--Calculates the Checksum
+local function GetCheckSum(tbl)
+  local entrySum = 0
+  for k,v in pairs(tbl) do
+    if (tonumber(v) ~= nil and k ~= "Checksum") then
+      entrySum = entrySum + (math.floor(tonumber(v)) % string.len(k))
+    end
+  end
+  local n = table.Count(tbl)
+  if (tbl["Checksum"] ~= nil) then
+    n = n - 1
+  end
+  return (entrySum % (n))
+end
+
+-- Saves all Data from the gmod DB inside a .json file
+-- returns the save location of the file
+local function SaveAllEntries()
+  local values = {}
+
+  for k,v in pairs(PDEntries) do
+    values[v] = LocalPlayer():GetPData(v, 0)
+  end
+
+  values["Checksum"] = GetCheckSum(values)
+  local data = util.TableToJSON(values, true)
+
+  if (!file.IsDir("ttt_Statistics_Addon", "DATA")) then
+    file.CreateDir("ttt_Statistics_Addon")
+  end
+
+  local filename = "Stat_Export_" .. string.Replace( util.DateStamp(), " ", "_") .. ".json"
+  file.Write("ttt_Statistics_Addon/" .. filename, data)
+  return "The file was written to \ndata/ttt_Statistics_Addon/" .. filename
+end
+
+-- Loads the json data from the given file
+local function LoadAllEntries(path, name)
+  print(path, name)
+  local data = file.Read(name, path)
+  local table = util.JSONToTable(data)
+  if ( table == nil or GetCheckSum(table) ~= table["Checksum"]) then
+    return false
+  end
+
+  for k,v in pairs(table) do
+    local num = tonumber(v)
+    if (num ~= nil and (k ~= "Checksum")) then
+      LocalPlayer():SetPData(k, num)
+    elseif (k ~= "Checksum") then
+      LocalPlayer():SetPData(k, v)
+    end
+  end
+  return true
+end
+
 -- Removes all Data from the gmod DB
 local function DeleteAllEntries()
   for k,v in pairs(PDEntries) do
     LocalPlayer():RemovePData(v)
   end
+end
+
+local function DrawInfoWindow(text)
+    local frame = vgui.Create("DFrame")
+  frame:SetSize(0.2 * ScrW(), 0.11 * ScrH())
+  frame:Center()
+  frame:SetTitle("Information")
+  frame:MakePopup()
+
+  local label = vgui.Create("DLabel", frame)
+  label:Dock(FILL)
+  label:Center()
+  label:SetText(text)
+  label:SetFont("StatisticsDefault")
+
+  local button = vgui.Create("DButton", frame)
+  button:DockMargin(0.2 * frame:GetWide(), 0, 0.2 * frame:GetWide(), 0.1 * frame:GetTall())
+  button:Dock(BOTTOM)
+  button:SetText("Close")
+  button.DoClick = function()
+    frame:Remove()
+  end
+end
+
+local function PrepareImport(path)
+  print(path)
+  local bool = LoadAllEntries("GAME" , path)
+  local text
+  if (bool) then
+    text = "Import was successful."
+  else 
+    text = "The file was invalid"
+  end
+  DrawInfoWindow(text)
 end
 
 local function DrawDeveloperWindow(Entry)
@@ -160,14 +250,14 @@ end
 local function DrawSettingsWindow()
   local frame = vgui.Create("DFrame")
   frame:SetPos( 0.32760416666667 * ScrW(), 0.35185185185185 * ScrH() )
-  frame:SetSize( 0.22760416666667 * ScrW(), 0.21666666666667 * ScrH() )
-  frame:SetTitle("Settings - Version 1.1.1")
+  frame:SetSize( 0.22760416666667 * ScrW(), 0.27 * ScrH() )
+  frame:SetTitle("Settings - Version 1.2")
   frame:MakePopup()
 
 
   local e = vgui.Create( "DNumSlider", frame )
-  e:SetPos( -0.66875 * frame:GetWide(), 0.42307692307692 * frame:GetTall() )
-  e:SetSize( 1.6541666666667 * frame:GetWide(), 0.085470085470085 * frame:GetTall() )
+  e:SetPos( -0.66875 * frame:GetWide(), 0.339506172 * frame:GetTall() )
+  e:SetSize( 1.6541666666667 * frame:GetWide(), 0.06858710562414 * frame:GetTall() )
   e:SetMinMax(100, 1000)
   e:SetDecimals(0)
   e:SetDark(false)
@@ -175,28 +265,89 @@ local function DrawSettingsWindow()
   e:SetConVar("stat_MaxDamage")
 
   local e = vgui.Create( "DCheckBoxLabel", frame )
-  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.18376068376068 * frame:GetTall() )
-  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.068376068376068 * frame:GetTall() )
+  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.147462277 * frame:GetTall() )
+  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.05486968449931 * frame:GetTall() )
   e:SetText("Record your stats")
   e:SetValue(GetConVar("stat_Record"):GetBool())
   e:SetConVar("stat_Record")
 
   local e = vgui.Create( "DLabel", frame )
-  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.33333333333333 * frame:GetTall() )
-  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.085470085470085 * frame:GetTall() )
+  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.2674897 * frame:GetTall() )
+  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.06858710562414 * frame:GetTall() )
   e:SetFont("StatisticsDefault")
   e:SetText("Set the maximum damage added to your stats per received/dealt damage:")
 
   local e = vgui.Create( "DButton", frame )
-  e:SetPos( 0.2745995423341 * frame:GetWide(), 0.83333333333333 * frame:GetTall() )
-  e:SetSize( 0.45766590389016 * frame:GetWide(), 0.094017094017094 * frame:GetTall() )
+  e:SetPos( 0.2745995423341 * frame:GetWide(), 0.877777777777 * frame:GetTall() )
+  e:SetSize( 0.45766590389016 * frame:GetWide(), 0.0754458161865 * frame:GetTall() )
   e:SetText("Close Window")
   e:SetFont("StatisticsDefault")
   e.DoClick = function() frame:Remove() end
 
+  // Import/Export of the json files
+
+  local e = vgui.Create( "DLabel", frame )
+  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.46 * frame:GetTall() )
+  e:SetSize( 0.93363844393593 * frame:GetWide(), 0.06858710562414 * frame:GetTall() )
+  e:SetFont("StatisticsDefault")
+  e:SetText("Import/Export your current stats:")
+
+  local import = vgui.Create("DButton", frame)
+  import:SetPos( 0.134324942791762 * frame:GetWide(), 0.5506172 * frame:GetTall() )
+  import:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
+  import:SetText("Import")
+  import:SetFont("StatisticsDefault")
+  -- Draws a file browser set in the "DATA" folder
+  import.DoClick = function() 
+    local frame = vgui.Create("DFrame")
+    frame:SetPos( 0.35760416666667 * ScrW(), 0.40185185185185 * ScrH() )
+    frame:SetSize( 0.22760416666667 * ScrW(), 0.27 * ScrH() )
+    frame:MakePopup()
+    frame:SetTitle("Select a file")
+  
+    local margin = 0.01 * frame:GetTall()
+  
+    local text = vgui.Create("DLabel", frame)
+    text:Dock(TOP)
+    text:SetText("Double-Click on a .json file to import it")
+    text:SetFont("StatisticsHudHint")
+  
+    local browser = vgui.Create( "DFileBrowser", frame)
+    browser:DockMargin(0, margin, 0, margin)
+    browser:Dock(FILL)
+    browser:SetPath("GAME")
+    browser:SetBaseFolder("data")
+    if (file.IsDir("ttt_Statistics_Addon" , "DATA")) then
+      browser:SetCurrentFolder("ttt_Statistics_Addon")
+    end
+    browser:SetOpen(true)
+  
+    function browser:OnDoubleClick(path, pnl)
+      frame:Remove()
+      PrepareImport(path)
+    end
+
+    local exit = vgui.Create("DButton", frame)
+    exit:DockMargin(margin, margin, margin, margin)
+    exit:Dock(BOTTOM)
+    exit:SetText("Exit")
+    exit.DoClick = function ()
+      frame:Remove()
+    end
+  end
+
+  local import = vgui.Create("DButton", frame)
+  import:SetPos( 0.6 * frame:GetWide(), 0.5506172 * frame:GetTall() )
+  import:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
+  import:SetText("Export")
+  import:SetFont("StatisticsDefault")
+  import.DoClick = function()
+    DrawInfoWindow(SaveAllEntries())
+  end
+
   local e = vgui.Create( "DTextEntry", frame )
-  e:SetPos( 0.7025171624714 * frame:GetWide(), 0.63675213675214 * frame:GetTall() )
-  e:SetSize( 0.26544622425629 * frame:GetWide(), 0.12820512820513 * frame:GetTall() )
+  e:SetPos( 0.7025171624714 * frame:GetWide(), 0.707122507 * frame:GetTall() )
+  e:SetSize( 0.26544622425629 * frame:GetWide(), 0.10288065843 * frame:GetTall() )
   e.OnEnter = function()
     if e:GetValue() == "DELETE" then
       DeleteAllEntries()
@@ -208,8 +359,8 @@ local function DrawSettingsWindow()
   end
 
   local e = vgui.Create( "DLabel", frame )
-  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.63675213675214 * frame:GetTall() )
-  e:SetSize( 0.66819221967963 * frame:GetWide(), 0.12820512820513 * frame:GetTall() )
+  e:SetPos( 0.034324942791762 * frame:GetWide(), 0.707122507 * frame:GetTall() )
+  e:SetSize( 0.66819221967963 * frame:GetWide(), 0.102880658 * frame:GetTall() )
   e:SetText("Type in \"DELETE\" and hit Enter to delete all entries:")
   e:SetFont("StatisticsDefault")
 end
