@@ -224,6 +224,9 @@ hook.Add("TTTBeginRound", "ttt_Statistics_Addon", function()
 	Playerhurt = false
 	TimeAlive = SysTime()
 	local Rolename = "stat_TimesYouWere_" .. LocalPlayer():GetRoleString()
+	for i, v in ipairs( player.GetAll() ) do
+    		print( v:Nick() .. " is " .. v:GetRoleString())
+	end
 	local TotalRolesString = LocalPlayer():GetPData("stat_TotalRoles", "")
 	local TotalRolesTable = string.Split(TotalRolesString, "\n")
 	local testing = false
